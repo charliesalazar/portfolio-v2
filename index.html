@@ -1,20 +1,71 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hello World</title>
-    <style>
-      body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        margin: 0;
-      }
-    </style>
-  </head>
-  <body>
-    Hello World
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hello World</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      cursor: none;
+      background: white;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      z-index: 1;
+    }
+
+    /* Brutalist cursor */
+    .cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: black;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s ease, background 0.15s ease;
+      mix-blend-mode: difference;
+    }
+
+    .cursor.click {
+      transform: translate(-50%, -50%) scale(1.4);
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Hello World</h1>
+  <div class="cursor"></div>
+
+  <script>
+    const cursor = document.querySelector('.cursor');
+
+    window.addEventListener('mousemove', (e) => {
+      cursor.style.left = `${e.clientX}px`;
+      cursor.style.top = `${e.clientY}px`;
+    });
+
+    window.addEventListener('mousedown', () => {
+      cursor.classList.add('click');
+    });
+
+    window.addEventListener('mouseup', () => {
+      cursor.classList.remove('click');
+    });
+  </script>
+</body>
 </html>
