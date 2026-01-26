@@ -10,68 +10,130 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      cursor: none;
       background: white;
       font-family: system-ui, -apple-system, sans-serif;
     }
 
+    /* Base reset */
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: white;
+      color: black;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Page container */
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 64px 24px;
     }
 
-    body:hover .cursor {
-      opacity: 1;
+    /* Header */
+    .site-header {
+      margin-bottom: 96px;
     }
 
-    h1 {
-      font-size: 2rem;
-      z-index: 1;
+    .name {
+      font-size: 3rem;
+      line-height: 1.1;
+      margin: 0 0 16px 0;
     }
 
-    /* Brutalist cursor */
-    .cursor {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: red;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      transition: transform 0.08s ease, background 0.15s ease;
-      mix-blend-mode: difference;
-      opacity: 0;
+    .tagline {
+      font-size: 1.125rem;
+      max-width: 520px;
+      margin: 0;
     }
 
-    .cursor.click {
-      transform: translate(-50%, -50%) scale(1.4);
+    /* Sections */
+    section {
+      margin-bottom: 96px;
+    }
+
+    h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 24px;
+    }
+
+    /* Work list */
+    .work-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .work-item {
+      margin-bottom: 32px;
+    }
+
+    .work-item h3 {
+      font-size: 1.25rem;
+      margin: 0 0 8px 0;
+    }
+
+    .work-item p {
+      margin: 0;
+      max-width: 560px;
+    }
+
+    /* Footer */
+    .site-footer {
+      margin-top: 128px;
+      font-size: 0.875rem;
+      color: #666;
     }
   </style>
 </head>
 
 <body>
-  <h1>Hello World</h1>
-  <div class="cursor"></div>
+<header class="site-header">
+  <h1 class="name">Charlie Salazar</h1>
+  <p class="tagline">
+    Product designer focused on clarity, systems, and human-scale software.
+  </p>
+</header>
 
-  <script>
-    const cursor = document.querySelector('.cursor');
-    cursor.style.display = 'block';
+<main>
+  <section class="work">
+    <h2>Selected work</h2>
 
-    window.addEventListener('mousemove', (e) => {
-      cursor.style.left = `${e.clientX}px`;
-      cursor.style.top = `${e.clientY}px`;
-    });
+    <ul class="work-list">
+      <li class="work-item">
+        <h3>Catchpoint — EarthView Smartboard</h3>
+        <p>Turning network data into something humans can reason about.</p>
+      </li>
 
-    window.addEventListener('mousedown', () => {
-      cursor.classList.add('click');
-    });
+      <li class="work-item">
+        <h3>Transcat — eCommerce redesign</h3>
+        <p>Modernizing industrial purchasing workflows.</p>
+      </li>
 
-    window.addEventListener('mouseup', () => {
-      cursor.classList.remove('click');
-    });
-  </script>
+      <li class="work-item">
+        <h3>SolarWinds — Platform navigation</h3>
+        <p>Helping users understand complex systems faster.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="about">
+    <h2>Design POV</h2>
+    <p>
+      I design tools that reduce friction, support real work, and respect the
+      people using them.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>© Charlie Salazar</p>
+</footer>
 </body>
 </html>
