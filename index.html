@@ -3,16 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hello World</title>
+  <title>Carlos (Charlie) Salazar</title>
 
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: white;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
+    
 
     /* Base reset */
     * {
@@ -22,16 +16,16 @@
     html, body {
       margin: 0;
       padding: 0;
-      background: white;
+      background: #fff;
       color: black;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     /* Page container */
     body {
-      max-width: 960px;
+      max-width: 1040px;
       margin: 0 auto;
-      padding: 64px 24px;
+      padding: 56px 20px;
     }
 
     /* Header */
@@ -39,28 +33,37 @@
       margin-bottom: 96px;
     }
 
+    .rule {
+      height: 6px;
+      width: 72px;
+      background: #000;
+      margin: 24px 0 0 0;
+    }
+
     .name {
-      font-size: 3rem;
-      line-height: 1.1;
-      margin: 0 0 16px 0;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 0 0 12px 0;
+      font-weight: 900;
     }
 
     .tagline {
       font-size: 1.125rem;
-      max-width: 520px;
+      max-width: 58ch;
       margin: 0;
     }
 
     /* Sections */
     section {
-      margin-bottom: 96px;
+      margin-bottom: 88px;
     }
 
     h2 {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 24px;
+      letter-spacing: 0.12em;
+      margin: 0 0 18px 0;
     }
 
     /* Work list */
@@ -71,17 +74,31 @@
     }
 
     .work-item {
-      margin-bottom: 32px;
+      margin-bottom: 20px;
+    }
+
+    .work-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border: 2px solid #000;
+      padding: 18px 18px 16px 18px;
+      background: #f2f2f2;
+    }
+
+    .work-link:hover {
+      background: #e9e9e9;
     }
 
     .work-item h3 {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       margin: 0 0 8px 0;
+      font-weight: 700;
     }
 
     .work-item p {
       margin: 0;
-      max-width: 560px;
+      max-width: 70ch;
     }
 
     /* Footer */
@@ -90,6 +107,60 @@
       font-size: 0.875rem;
       color: #666;
     }
+
+    .cta {
+      display: inline-block;
+      margin-top: 18px;
+      text-decoration: none;
+      color: #000;
+      border-bottom: 2px solid #000;
+      padding-bottom: 2px;
+      font-weight: 700;
+    }
+
+    .cta:hover {
+      opacity: 0.75;
+    }
+
+    /* About layout */
+    .about-layout {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .about-photo {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      background: #eee;
+      border: 2px solid #000;
+    }
+
+    /* Mobile: stack photo above text */
+    @media (max-width: 720px) {
+      body {
+        padding: 40px 16px;
+      }
+
+      .site-header {
+        margin-bottom: 72px;
+      }
+
+      section {
+        margin-bottom: 72px;
+      }
+
+      .about-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .about-photo {
+        width: 140px;
+        height: 140px;
+      }
+    }
   </style>
 </head>
 
@@ -97,8 +168,9 @@
 <header class="site-header">
   <h1 class="name">Charlie Salazar</h1>
   <p class="tagline">
-    Product designer focused on clarity, systems, and human-scale software.
+    End-to-end product designer helping teams build cleaner, kinder digital tools, one smart system at a time.
   </p>
+  <div class="rule" aria-hidden="true"></div>
 </header>
 
 <main>
@@ -107,28 +179,62 @@
 
     <ul class="work-list">
       <li class="work-item">
-        <h3>Catchpoint — EarthView Smartboard</h3>
-        <p>Turning network data into something humans can reason about.</p>
+        <a class="work-link" href="#">
+          <h3>Catchpoint — EarthView Smartboard</h3>
+          <p>Turning network data into something humans can reason about.</p>
+        </a>
       </li>
 
       <li class="work-item">
-        <h3>Transcat — eCommerce redesign</h3>
-        <p>Modernizing industrial purchasing workflows.</p>
+        <a class="work-link" href="#">
+          <h3>Catchpoint — Endpoint Monitoring</h3>
+          <p>Improving how teams understand performance across distributed endpoints.</p>
+        </a>
       </li>
 
       <li class="work-item">
-        <h3>SolarWinds — Platform navigation</h3>
-        <p>Helping users understand complex systems faster.</p>
+        <a class="work-link" href="#">
+          <h3>Transcat — eCommerce redesign</h3>
+          <p>Modernizing industrial purchasing workflows.</p>
+        </a>
+      </li>
+
+      <li class="work-item">
+        <a class="work-link" href="#">
+          <h3>SolarWinds — Platform navigation</h3>
+          <p>Helping users understand complex systems faster.</p>
+        </a>
+      </li>
+
+      <li class="work-item">
+        <a class="work-link" href="#">
+          <h3>Digital Giving Platform</h3>
+          <p>Designing donation flows that feel simple, respectful, and fast.</p>
+        </a>
       </li>
     </ul>
+    <a class="cta" href="#">View all case studies</a>
   </section>
 
   <section class="about">
-    <h2>Design POV</h2>
-    <p>
-      I design tools that reduce friction, support real work, and respect the
-      people using them.
-    </p>
+    <h2>About</h2>
+    <div class="about-layout">
+      <img
+        src="avatar-placeholder.jpg"
+        alt="Photo of Charlie Salazar"
+        class="about-photo"
+      />
+      <div class="about-text">
+        <p>
+          I’m a human-centered product designer who believes research isn’t optional.
+          If you’re not researching, you’re not designing.
+        </p>
+        <p>
+          I focus on clarity, systems, and collaboration — especially in complex,
+          enterprise environments where the cost of confusion is real.
+        </p>
+      </div>
+    </div>
   </section>
 </main>
 
