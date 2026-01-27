@@ -8,6 +8,10 @@
   --font-sans: "Archivo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
 
+  /* Display font for your name / big headings (Archivo Expanded) */
+  --font-display: "Archivo Expanded", "Archivo", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
   /* Variable font defaults (Archivo supports wdth + wght) */
   --wdth-normal: 100;
   --wdth-wide: 125;
@@ -55,6 +59,7 @@ body {
   margin: 0;
   color: var(--c-fg);
   background: var(--c-bg);
+  overflow-x: hidden;
   font-family: var(--font-sans);
   font-variation-settings: "wdth" var(--wdth-normal), "wght" var(--wght-regular);
   line-height: 1.45;
@@ -111,24 +116,46 @@ a:focus-visible {
   margin-top: var(--s-3);
 }
 
-/* Name: wdth 125 + wght 900 + tight tracking */
+/* Name: BIG, two-line, tight tracking (resume-style) */
 .name {
+  /* Big, resume-style lockup */
   margin: 0 0 var(--s-2) 0;
   text-transform: uppercase;
-  line-height: 0.98;
+  line-height: 0.9;
 
-  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  /* Use Archivo Expanded for the name */
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 8vw, 6.2rem);
   font-style: normal;
+
+  /* Variable font settings: width 125 + weight 900 */
   font-weight: var(--wght-black);
   font-variation-settings: "wdth" var(--wdth-wide), "wght" var(--wght-black);
-  letter-spacing: -0.04em;
+
+  /* Tighter tracking (closer to your resume look) */
+  letter-spacing: -0.075em;
+
+  transition:
+    letter-spacing var(--dur-2) var(--ease-snappy),
+    transform var(--dur-2) var(--ease-snappy);
+}
+
+.name:hover {
+  letter-spacing: -0.082em;
+  transform: translateY(-1px) rotate(-0.2deg);
+}
+
+.name-line {
+  display: block;
+  white-space: nowrap;
 }
 
 .nickname {
+  /* Small tag like your resume: visible but not shouting */
   font-weight: 700;
-  font-size: 0.22em;
+  font-size: 0.13em;
   letter-spacing: 0.18em;
-  margin-left: 12px;
+  margin-left: 0.6em;
   vertical-align: baseline;
   opacity: 0.9;
   white-space: nowrap;
@@ -175,6 +202,7 @@ h2 {
   transform: translate(-3px, -3px) rotate(-0.25deg);
   box-shadow: var(--shadow-hard-sm);
   background: color-mix(in srgb, var(--c-soft) 78%, white);
+  letter-spacing: -0.005em;
 }
 
 .work-item h3 {
