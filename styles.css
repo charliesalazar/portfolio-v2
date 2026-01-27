@@ -1,0 +1,126 @@
+/* styles.css
+   All styling lives here so index.html stays clean.
+*/
+
+:root {
+  --max: 1040px;
+  --pad: 20px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  color: #000;
+  font-family: "Archivo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 56px var(--pad);
+}
+
+/* Header */
+.site-header { margin-bottom: 96px; }
+
+.name {
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  line-height: 1;
+  margin: 0 0 12px 0;
+
+  /* Archivo variable axes to match your Google Fonts settings */
+  font-weight: 900;
+  font-style: normal;
+  font-variation-settings: "wdth" 125, "wght" 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.nickname {
+  font-weight: 700;
+  font-size: 0.38em;
+  letter-spacing: 0.14em;
+  margin-left: 12px;
+  opacity: 0.9;
+}
+
+.tagline {
+  margin: 0;
+  max-width: 58ch;
+  font-size: 1.125rem;
+  color: #111;
+}
+
+.rule {
+  height: 6px;
+  width: 72px;
+  background: #000;
+  margin: 24px 0 0 0;
+}
+
+/* Work list */
+.work-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.work-item { margin-bottom: 20px; }
+
+.work-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: 2px solid #000;
+  padding: 18px;
+  background: #f2f2f2;
+}
+
+.work-link:hover { background: #e9e9e9; }
+
+.work-item h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.work-item p {
+  margin: 0;
+  max-width: 70ch;
+}
+
+/* About */
+.about-layout {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.about-photo {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border: 2px solid #000;
+  background: #eee;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: 128px;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+/* Mobile */
+@media (max-width: 720px) {
+  body { padding: 40px 16px; }
+  .site-header { margin-bottom: 72px; }
+  .about-layout { grid-template-columns: 1fr; }
+  .about-photo { width: 140px; height: 140px; }
+}

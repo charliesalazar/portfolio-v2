@@ -6,8 +6,12 @@
   <title>Carlos (Charlie) Salazar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Fonts
+       - Archivo: body copy
+       - Archivo Expanded: your resume-style, wide/extended headline font
+  -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62.5..125,100..900;1,62.5..125,100..900&display=swap"
     rel="stylesheet"
   />
 
@@ -47,11 +51,34 @@
     }
 
     .name {
-      font-size: clamp(2.2rem, 5vw, 3.6rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
+      /* Big, bold, extended-feeling name (matches your resume vibe) */
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      line-height: 1.0;
       margin: 0 0 12px 0;
+
+      /* Resume-style headline: use the Expanded cut first, then fall back */
+      font-family: "Archivo", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+      /* Make sure it hits the “blackest” weight available */
       font-weight: 900;
+      font-style: normal;
+      font-variation-settings: "wdth" 125, "wght" 900;
+      text-transform: uppercase;
+
+      /* Avoid any accidental underline/decoration */
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .nickname {
+      font-family: "Archivo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-weight: 700;
+      font-size: 0.38em;
+      letter-spacing: 0.14em;
+      margin-left: 12px;
+      vertical-align: baseline;
+      opacity: 0.9;
     }
 
     .tagline {
@@ -173,7 +200,7 @@
 
 <body>
 <header class="site-header">
-  <h1 class="name">Carlos Salazar</h1>
+  <h1 class="name">CARLOS SALAZAR <span class="nickname">(CHARLIE)</span></h1>
   <p class="tagline">
     End-to-end product designer helping teams build cleaner, kinder digital tools, one smart system at a time.
   </p>
