@@ -59,6 +59,12 @@ body {
   margin: 0;
   color: var(--c-fg);
   background: var(--c-bg);
+  /* Static brutalist paper/grid texture (no motion) */
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--c-fg) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--c-fg) 7%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  background-position: -1px -1px;
   overflow-x: hidden;
   font-family: var(--font-sans);
   font-variation-settings: "wdth" var(--wdth-normal), "wght" var(--wght-regular);
@@ -134,15 +140,6 @@ a:focus-visible {
 
   /* Tighter tracking (closer to your resume look) */
   letter-spacing: -0.075em;
-
-  transition:
-    letter-spacing var(--dur-2) var(--ease-snappy),
-    transform var(--dur-2) var(--ease-snappy);
-}
-
-.name:hover {
-  letter-spacing: -0.082em;
-  transform: translateY(-1px) rotate(-0.2deg);
 }
 
 .name-line {
@@ -192,22 +189,16 @@ h2 {
   border: var(--border);
   background: var(--c-soft);
   padding: var(--s-3);
-  transform: translate(0, 0);
-  transition: transform var(--dur-2) var(--ease-snappy),
-    box-shadow var(--dur-2) var(--ease-snappy),
-    background var(--dur-2) var(--ease-snappy);
+  box-shadow: 4px 4px 0 var(--c-fg);
 }
 
 .work-link:hover {
-  transform: translate(-3px, -3px) rotate(-0.25deg);
-  box-shadow: var(--shadow-hard-sm);
-  background: color-mix(in srgb, var(--c-soft) 78%, white);
-  letter-spacing: -0.005em;
+  background: color-mix(in srgb, var(--c-soft) 70%, white);
 }
 
 .work-item h3 {
   margin: 0 0 var(--s-1) 0;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 750;
   letter-spacing: -0.01em;
 }
