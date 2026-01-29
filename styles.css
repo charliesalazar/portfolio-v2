@@ -1,6 +1,6 @@
 /*
   portfolio-v2 Design System (v0.1)
-  Brutalist + modern typography, playful motion on hover.
+  Clean brutalist typography, no motion for now.
 */
 
 :root {
@@ -8,80 +8,86 @@
   --font-sans: "Archivo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
 
-  /* Display font for your name / big headings (Archivo Expanded) */
-  --font-display: "Archivo Expanded", "Archivo", system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Display font for your name / big headings */
+  /* Use Archivo variable (wdth axis) instead of the separate "Archivo Expanded" family */
+  --font-display: "Archivo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
 
   /* Variable font defaults (Archivo supports wdth + wght) */
   --wdth-normal: 100;
-  --wdth-wide: 125;
+  --wdth-display: 125;
   --wght-regular: 450;
   --wght-bold: 700;
   --wght-black: 900;
 
-  /* Color */
-  --c-bg: #fbfbf9;
-  --c-fg: #0a0a0a;
-  --c-muted: #4a4a4a;
-  --c-soft: #f0f0ec;
-
-  /* One accent. Use sparingly. */
-  --c-accent: #2f5bff;
-
   /* Layout */
-  --max-w: 1040px;
-  --pad-x: 20px;
-  --pad-y: 56px;
+  --max-w: 1320px;
+  --pad-x: 72px;
+  --pad-y: 88px;
 
   /* Spacing scale */
   --s-1: 8px;
   --s-2: 12px;
-  --s-3: 18px;
-  --s-4: 28px;
-  --s-5: 44px;
-  --s-6: 72px;
-  --s-7: 96px;
-  --s-8: 128px;
+  --s-3: 16px;
+  --s-4: 24px;
+  --s-5: 32px;
+  --s-6: 48px;
+  --s-7: 88px;
+  --s-8: 120px;
 
-  /* Borders / shadows */
-  --border: 2px solid var(--c-fg);
-  --shadow-hard-sm: 6px 6px 0 var(--c-fg);
+  /* Color (warm-only text, no cool whites) */
+  --c-bg: #0b0c0f;
 
-  /* Motion */
-  --ease-snappy: cubic-bezier(0.2, 0.9, 0.2, 1);
-  --dur-2: 220ms;
+  /* All text (headings + body) uses the same warm cream */
+  --c-text: #fffce1;
+  --c-fg: var(--c-text);
+
+  /* Muted body copy */
+  --c-muted: rgba(255, 252, 225, 0.72);
+
+  /* Card / surface tint (warm) */
+  --c-soft: rgba(255, 252, 225, 0.06);
+
+  /* One accent. Use sparingly. */
+  --c-accent: #ffb848;
+
+  /* Borders / shadows (warm) */
+  --border: 1px solid rgba(255, 252, 225, 0.18);
+  --border-strong: 1px solid rgba(255, 252, 225, 0.34);
+  --radius: 16px;
+  --shadow-hard-sm: 8px 8px 0 rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 26px 80px rgba(0, 0, 0, 0.65);
 }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 
+a { color: inherit; text-decoration: none; }
+
 body {
   margin: 0;
-  color: var(--c-fg);
+  min-height: 100vh;
+  color: var(--c-text);
   background: var(--c-bg);
-  /* Static brutalist paper/grid texture (no motion) */
+
+  /* Dark gradient + faint grid = GSAP-ish vibe without motion */
   background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--c-fg) 7%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--c-fg) 7%, transparent) 1px, transparent 1px);
-  background-size: 44px 44px;
-  background-position: -1px -1px;
+    radial-gradient(900px 520px at 18% 12%, rgba(255, 184, 72, 0.16), transparent 62%),
+    radial-gradient(860px 560px at 82% 22%, rgba(255, 138, 92, 0.14), transparent 64%),
+    linear-gradient(to right, rgba(255, 252, 225, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 252, 225, 0.055) 1px, transparent 1px);
+  background-size: auto, auto, 56px 56px, 56px 56px;
+  background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+
   overflow-x: hidden;
   font-family: var(--font-sans);
   font-variation-settings: "wdth" var(--wdth-normal), "wght" var(--wght-regular);
   line-height: 1.45;
-
-  max-width: var(--max-w);
-  margin-left: auto;
-  margin-right: auto;
-  padding: var(--pad-y) var(--pad-x);
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--c-accent) 28%, transparent);
+  background: rgba(255, 184, 72, 0.22);
 }
-
-/* Links: brutal underline + movement */
-a { color: inherit; text-decoration: none; }
 
 a.inline-link {
   position: relative;
@@ -95,16 +101,11 @@ a.inline-link::after {
   bottom: -2px;
   width: 100%;
   height: 2px;
-  background: var(--c-fg);
-  transform: scaleX(1);
-  transform-origin: left;
-  transition: transform var(--dur-2) var(--ease-snappy),
-    background var(--dur-2) var(--ease-snappy);
+  background: rgba(255, 252, 225, 0.75);
 }
 
 a.inline-link:hover::after {
   background: var(--c-accent);
-  transform: scaleX(0.72);
 }
 
 a:focus-visible {
@@ -113,7 +114,12 @@ a:focus-visible {
 }
 
 /* Header */
-.site-header { margin-bottom: var(--s-7); }
+.site-header {
+  /* Poster-like hero: big type + lots of air */
+  margin-bottom: var(--s-8);
+  padding-top: clamp(24px, 6vh, 88px);
+  padding-bottom: clamp(48px, 10vh, 160px);
+}
 
 .rule {
   height: 6px;
@@ -122,24 +128,22 @@ a:focus-visible {
   margin-top: var(--s-3);
 }
 
-/* Name: BIG, two-line, tight tracking (resume-style) */
 .name {
-  /* Big, resume-style lockup */
   margin: 0 0 var(--s-2) 0;
   text-transform: uppercase;
-  line-height: 0.9;
+  line-height: 0.92;
 
-  /* Use Archivo Expanded for the name */
   font-family: var(--font-display);
-  font-size: clamp(3.2rem, 8vw, 6.2rem);
+  /* Make the name feel like a poster */
+  font-size: clamp(4.25rem, 11.5vw, 9.5rem);
   font-style: normal;
-
-  /* Variable font settings: width 125 + weight 900 */
-  font-weight: var(--wght-black);
-  font-variation-settings: "wdth" var(--wdth-wide), "wght" var(--wght-black);
-
-  /* Tighter tracking (closer to your resume look) */
-  letter-spacing: -0.075em;
+  /* Lock in the “Expanded + Heavy” look */
+  font-weight: 900;
+  font-stretch: 125%;
+  font-variation-settings: "wdth" 125, "wght" 900;
+  letter-spacing: -0.06em;
+  text-rendering: geometricPrecision;
+  color: var(--c-text);
 }
 
 .name-line {
@@ -148,11 +152,11 @@ a:focus-visible {
 }
 
 .nickname {
-  /* Small tag like your resume: visible but not shouting */
+  font-family: var(--font-sans);
   font-weight: 700;
-  font-size: 0.13em;
+  font-size: 0.12em;
   letter-spacing: 0.18em;
-  margin-left: 0.6em;
+  margin-left: 0.6rem;
   vertical-align: baseline;
   opacity: 0.9;
   white-space: nowrap;
@@ -160,69 +164,128 @@ a:focus-visible {
 
 .tagline {
   margin: 0;
-  max-width: 62ch;
+  max-width: 54ch;
   color: var(--c-muted);
-  font-size: 1.125rem;
+  font-size: 1.2rem;
+  line-height: 1.55;
 }
 
 /* Sections */
-section { margin-bottom: var(--s-7); }
+section { margin-bottom: var(--s-8); }
+
+/* GSAP-ish rhythm: thin divider + extra breathing room between sections */
+section + section {
+  padding-top: var(--s-6);
+  border-top: 1px solid rgba(255, 252, 225, 0.18);
+}
 
 h2 {
   margin: 0 0 var(--s-3) 0;
   font-size: 0.85rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  font-weight: 800;
+  color: var(--c-text);
 }
 
-/* Work cards: playful motion on hover */
 .work-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s-5);
 }
 
 .work-link {
-  display: block;
+  display: grid;
+  grid-template-columns: 1.05fr minmax(320px, 600px);
+  gap: var(--s-5);
+  align-items: stretch;
+
+  border: var(--border-strong);
+  border-radius: calc(var(--radius) + 2px);
+  background: rgba(12, 13, 17, 0.72);
+  padding: var(--s-6);
+  box-shadow: var(--shadow-soft);
+
+  overflow: hidden;
+}
+
+.work-copy {
+  align-self: center;
+}
+
+.work-media {
   border: var(--border);
-  background: var(--c-soft);
-  padding: var(--s-3);
-  box-shadow: 4px 4px 0 var(--c-fg);
+  border-radius: calc(var(--radius) - 4px);
+  background: rgba(255, 252, 225, 0.05);
+  overflow: hidden;
+  min-height: 260px;
+  box-shadow: var(--shadow-hard-sm);
 }
 
-.work-link:hover {
-  background: color-mix(in srgb, var(--c-soft) 70%, white);
+.work-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.work-item h3 {
-  margin: 0 0 var(--s-1) 0;
-  font-size: 1.25rem;
-  font-weight: 750;
-  letter-spacing: -0.01em;
-}
-
-.work-item p {
-  margin: 0;
-  color: var(--c-muted);
-  max-width: 70ch;
+.work-img-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  border-radius: calc(var(--radius) - 6px);
+  background:
+    radial-gradient(420px 260px at 30% 30%, rgba(255, 184, 72, 0.18), transparent 60%),
+    radial-gradient(520px 320px at 70% 40%, rgba(255, 138, 92, 0.14), transparent 62%),
+    rgba(255, 252, 225, 0.04);
+  border: 1px solid rgba(255, 252, 225, 0.14);
 }
 
 /* About */
+
+/* Utility: full-bleed element inside a centered/max-width layout */
+.full-bleed {
+  width: 100vw;
+  max-width: none;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+/* About layout: photo first (full-bleed), text below */
 .about-layout {
   display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: var(--s-4);
+  grid-template-columns: 1fr;
+  gap: var(--s-6);
   align-items: start;
 }
 
 .about-photo {
-  width: 180px;
-  height: 180px;
+  /* Full-bleed poster photo */
+  display: block;
+  width: 100vw;
+  max-width: none;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+
+  /* Big, poster-like portrait block */
+  min-height: clamp(420px, 60vh, 760px);
+  height: clamp(420px, 60vh, 760px);
+
+  /* Keep a consistent “poster” crop */
   object-fit: cover;
-  border: var(--border);
-  background: #eee;
+  object-position: center;
+
+  /* Full-bleed usually looks better with square edges */
+  border-top: var(--border);
+  border-bottom: var(--border);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+
+  background: rgba(255, 252, 225, 0.05);
+  box-shadow: var(--shadow-soft);
   filter: contrast(1.03) saturate(1.03);
 }
 
@@ -238,6 +301,7 @@ h2 {
   border-top: var(--border);
   color: var(--c-muted);
   font-size: 0.95rem;
+  background: rgba(12, 13, 17, 0.55);
 }
 
 .footer-contact {
@@ -253,9 +317,54 @@ h2 {
 
 /* Mobile */
 @media (max-width: 720px) {
-  :root { --pad-x: 16px; --pad-y: 40px; }
-  .site-header { margin-bottom: var(--s-6); }
+  :root { --pad-x: 18px; --pad-y: 44px; --s-7: 64px; --s-8: 88px; }
+  .site-header {
+    margin-bottom: var(--s-7);
+    padding-top: 28px;
+    padding-bottom: 64px;
+  }
   section { margin-bottom: var(--s-6); }
   .about-layout { grid-template-columns: 1fr; }
-  .about-photo { width: 140px; height: 140px; }
+  .about-photo {
+    display: block;
+    width: 100vw;
+    max-width: none;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+
+    min-height: 320px;
+    height: 420px;
+
+    object-fit: cover;
+    object-position: center;
+
+    border-top: var(--border);
+    border-bottom: var(--border);
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
+  .work-link { padding: var(--s-3); }
+  .name-line { white-space: normal; }
+  .nickname { display: inline-block; margin-left: 0.4em; }
+
+  .work-link { grid-template-columns: 1fr; }
+  .work-media { min-height: 180px; }
+
+  .name {
+    font-size: clamp(3.1rem, 14vw, 5.2rem);
+    letter-spacing: -0.055em;
+  }
+
+  .tagline {
+    font-size: 1.05rem;
+    max-width: 60ch;
+  }
+}
+
+.page {
+  max-width: var(--max-w);
+  margin-left: auto;
+  margin-right: auto;
+  padding: var(--pad-y) var(--pad-x);
 }

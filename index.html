@@ -1,114 +1,137 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Carlos (Charlie) Salazar</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carlos (Charlie) Salazar</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- Fonts
-       - Archivo: body copy (variable: ital/wdth/wght)
-       - Archivo Expanded: optional headline font (resume-style)
-  -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62.5..125,100..900;1,62.5..125,100..900&family=Archivo+Expanded:wght@200..900&display=swap"
-    rel="stylesheet"
-  />
-  <link rel="stylesheet" href="styles.css" />
-</head>
+    <!-- Archivo variable font (wdth + wght axes) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,100..900&display=swap"
+      rel="stylesheet"
+    />
 
-<body>
-  <header class="site-header">
-    <h1 class="name" aria-label="Carlos Salazar (Charlie)">
-      <span class="name-lines">
+    <!-- Site styles live here (keep HTML clean) -->
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- JS is optional for now; file can stay empty until we add motion -->
+    <script src="main.js" defer></script>
+  </head>
+
+  <body>
+    <div class="page">
+    <!-- HERO / HEADER -->
+    <header class="site-header">
+      <h1 class="name">
         <span class="name-line">CARLOS</span>
-        <span class="name-line">SALAZAR <span class="nickname">(CHARLIE)</span></span>
-      </span>
-    </h1>
+        <span class="name-line">SALAZAR</span>
+        <span class="nickname">(CHARLIE)</span>
+      </h1>
 
-    <p class="tagline">
-      End-to-end product designer helping teams build cleaner, kinder digital tools, one smart system at a time.
-    </p>
+      <p class="tagline">
+        End-to-end product designer helping teams build cleaner, kinder digital tools, one
+        smart system at a time.
+      </p>
 
-    <div class="rule" aria-hidden="true"></div>
-  </header>
+      <div class="rule" aria-hidden="true"></div>
+    </header>
 
-  <main>
-    <section class="work">
-      <h2>Selected work</h2>
+    <main>
+      <!-- WORK -->
+      <section aria-labelledby="work-title">
+        <h2 id="work-title">Selected Work</h2>
 
-      <ul class="work-list">
-        <li class="work-item">
-          <a class="work-link" href="https://charliesalazar.myportfolio.com/catchpont-earthview-smartboard">
-            <h3>Catchpoint - EarthView Smartboard</h3>
-            <p>Turning network data into something humans can reason about.</p>
-          </a>
-        </li>
+        <ul class="work-list">
+          <li class="work-item">
+            <a class="work-link" href="#" aria-label="Transforming Network Data into Interactive 3D Insights">
+              <div class="work-copy">
+                <h3>Transforming Network Data into Interactive 3D Insights</h3>
+                <p>Empowering users with a dynamic, real-time visualization tool for faster decision-making.</p>
+              </div>
 
-        <li class="work-item">
-          <a class="work-link" href="https://charliesalazar.myportfolio.com/performance-monitoring-tool-redesign">
-            <h3>Catchpoint - Endpoint Monitoring</h3>
-            <p>Improving how teams understand performance across distributed endpoints.</p>
-          </a>
-        </li>
+              <div class="work-media" aria-hidden="true">
+                <div class="work-img-placeholder" aria-hidden="true"></div>
+              </div>
+            </a>
+          </li>
 
-        <li class="work-item">
-          <a class="work-link" href="https://charliesalazar.myportfolio.com/transcat">
-            <h3>Transcat - eCommerce redesign</h3>
-            <p>Modernizing industrial purchasing workflows.</p>
-          </a>
-        </li>
+          <li class="work-item">
+            <a class="work-link" href="#" aria-label="Improving IT Workflows with Better Monitoring">
+              <div class="work-copy">
+                <h3>Improving IT Workflows with Better Monitoring</h3>
+                <p>Enhancing endpoint monitoring with better navigation, customization, and efficiency.</p>
+              </div>
 
-        <li class="work-item">
-          <a class="work-link" href="https://charliesalazar.myportfolio.com/solarwinds">
-            <h3>SolarWinds - Platform navigation</h3>
-            <p>Helping users understand complex systems faster.</p>
-          </a>
-        </li>
+              <div class="work-media" aria-hidden="true">
+                <div class="work-img-placeholder" aria-hidden="true"></div>
+              </div>
+            </a>
+          </li>
 
-        <li class="work-item">
-          <a class="work-link" href="https://charliesalazar.myportfolio.com/copy-of-performance-monitoring-tool-redesign">
-            <h3>Digital Giving Platform</h3>
-            <p>Designing donation flows that feel simple, respectful, and fast.</p>
-          </a>
-        </li>
-      </ul>
-    </section>
+          <li class="work-item">
+            <a class="work-link" href="#" aria-label="Improving the platform experience for SolarWinds users">
+              <div class="work-copy">
+                <h3>Improving the platform experience for SolarWinds users</h3>
+                <p>Reworked navigation and templates to better reflect how people actually explore and evaluate products.</p>
+              </div>
 
-    <section class="about">
-      <h2>About</h2>
+              <div class="work-media" aria-hidden="true">
+                <div class="work-img-placeholder" aria-hidden="true"></div>
+              </div>
+            </a>
+          </li>
 
-      <div class="about-layout">
-        <img
-          src="assets/about.jpg"
-          alt="Photo of Carlos (Charlie) Salazar"
-          class="about-photo"
-        />
+          <li class="work-item">
+            <a class="work-link" href="#" aria-label="Modernizing eCommerce workflows for industrial buyers">
+              <div class="work-copy">
+                <h3>Modernizing eCommerce workflows for industrial buyers</h3>
+                <p>A design system and navigation overhaul rooted in real customer feedback.</p>
+              </div>
 
-        <div class="about-text">
-          <p>
-            I design tools that make complex work feel straightforward. The kind of software where people are trying to get something done, not admire the UI.
-          </p>
-          <p>
-            I'm happiest in messy, data-heavy, enterprise problems, where good structure and a little research turns "ugh" into "oh, that makes sense." I care a lot about accessibility too, because it's not optional.
-          </p>
+              <div class="work-media" aria-hidden="true">
+                <div class="work-img-placeholder" aria-hidden="true"></div>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ABOUT -->
+      <section aria-labelledby="about-title">
+        <h2 id="about-title">About</h2>
+
+        <div class="about-layout">
+          <!-- Full-bleed photo (styles.css already makes this poster-sized) -->
+          <img class="about-photo" src="assets/about.jpg" alt="Portrait of Carlos (Charlie) Salazar" />
+
+          <div class="about-text">
+            <p>
+              I design software for people doing real work. I like messy, high-stakes workflows where clarity
+              and trust matter.
+            </p>
+            <p>
+              I lead with research, prototype quickly in Figma, and ship systems that help teams move faster
+              without breaking things.
+            </p>
+          </div>
         </div>
+      </section>
+    </main>
+
+    <!-- FOOTER / CONTACT -->
+    <footer class="site-footer">
+      <div class="footer-contact">
+        <a class="inline-link" href="mailto:charliesalazar@gmail.com">charliesalazar@gmail.com</a>
+        <span class="dot" aria-hidden="true">•</span>
+        <a class="inline-link" href="https://linkedin.com/in/charliesalazar" target="_blank" rel="noreferrer">LinkedIn</a>
+        <span class="dot" aria-hidden="true">•</span>
+        <a class="inline-link" href="https://charliesalazar.myportfolio.com" target="_blank" rel="noreferrer">Current site</a>
       </div>
-    </section>
-  </main>
 
-  <footer class="site-footer">
-    <div class="footer-contact">
-      <a class="inline-link" href="mailto:charliesalazar@gmail.com">charliesalazar@gmail.com</a>
-      <span class="dot" aria-hidden="true">•</span>
-      <a class="inline-link" href="https://linkedin.com/in/charliesalazar" target="_blank" rel="noreferrer noopener">LinkedIn</a>
-      <span class="dot" aria-hidden="true">•</span>
-      <a class="inline-link" href="tel:+13109908984">(310) 990-8984</a>
+      <p class="copyright">© <span id="year">2026</span> Carlos (Charlie) Salazar</p>
+    </footer>
     </div>
-    <p class="copyright">© Carlos (Charlie) Salazar</p>
-  </footer>
-
-  <script src="main.js" defer></script>
-</body>
+  </body>
 </html>
