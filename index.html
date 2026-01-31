@@ -19,22 +19,25 @@
   <body>
     <div class="page">
       <header class="site-header">
-        <h1 class="name">
-          <span class="name-line">CARLOS</span>
-          <span class="name-line">SALAZAR</span>
-          <span class="nickname">(CHARLIE)</span>
-        </h1>
+        <div class="container">
+          <h1 class="name">
+            <span class="name-line">CARLOS</span>
+            <span class="name-line">SALAZAR</span>
+            <span class="nickname">(CHARLIE)</span>
+          </h1>
 
-        <p class="tagline">
-          End-to-end product designer helping teams build cleaner, kinder digital tools, one smart system at a time.
-        </p>
+          <p class="tagline">
+            End-to-end product designer helping teams build cleaner, kinder digital tools, one smart system at a time.
+          </p>
 
-        <div class="rule" aria-hidden="true"></div>
+          <div class="rule" aria-hidden="true"></div>
+        </div>
       </header>
 
       <main>
         <section aria-labelledby="work-title">
-          <h2 id="work-title">Selected Work</h2>
+          <div class="container">
+            <h2 id="work-title">Selected Work</h2>
 
           <ul class="work-list">
             <li class="work-item">
@@ -89,44 +92,55 @@
               </a>
             </li>
           </ul>
+          </div>
         </section>
 
         <section aria-labelledby="about-title">
-          <h2 id="about-title">About</h2>
 
-          <div class="about-layout">
-            <img class="about-photo" src="assets/about.jpg" alt="Portrait of Carlos (Charlie) Salazar" />
+          <div class="container about-text-container">
+            <h2 id="about-title">About</h2>
+          </div>
 
-            <div class="about-text">
-              <p>I design software for people doing real work. I like messy, high-stakes workflows where clarity and trust matter.</p>
-              <p>I lead with research, prototype quickly in Figma, and ship systems that help teams move faster without breaking things.</p>
+          <!-- full-bleed image -->
+          <div class="about-bleed">
+            <img
+              class="about-photo"
+              src="assets/about.jpg"
+              alt="Portrait of Carlos (Charlie) Salazar"
+            />
+          </div>
+
+          <!-- text aligned to same grid as Selected Work -->
+          <div class="container about-text-container">
+            <div class="about-layout">
+              <p>
+                I design software for people doing real work. I like messy, high-stakes workflows where clarity and trust matter.
+                I lead with research, prototype quickly in Figma, and ship systems that help teams move faster without breaking things.
+              </p>
             </div>
           </div>
+
         </section>
       </main>
     </div>
 
     <footer class="site-footer">
-      <div class="page">
-        <div class="footer-inner">
+      <div class="footer-inner container">
 
-          <div class="footer-primary">
-            <h2 class="footer-title">Let’s work together</h2>
+        <div class="footer-top">
+          <h2 class="footer-heading">Let’s work together</h2>
 
-            <nav class="footer-links" aria-label="Footer links">
-              <a href="mailto:charliesalazar@gmail.com">Email</a>
-              <a href="https://www.linkedin.com/in/charliesalazar" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-              <a href="https://drive.google.com/file/d/1NAVbikYDcylIKMFSnAgftIGYKYRVfM62/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Resume</a>
-            </nav>
-          </div>
-
-          <div class="footer-secondary">
-            <p class="footer-brand">
-              © 2026 Carlos (Charlie) Salazar
-            </p>
-          </div>
-
+          <nav class="footer-links" aria-label="Footer links">
+            <a href="mailto:charliesalazar@gmail.com">Email</a>
+            <a href="https://www.linkedin.com/in/charliesalazar" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://drive.google.com/file/d/1NAVbikYDcylIKMFSnAgftIGYKYRVfM62/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Resume</a>
+          </nav>
         </div>
+
+        <div class="footer-bottom">
+          <p class="footer-brand">© 2024 Carlos (Charlie) Salazar</p>
+        </div>
+
       </div>
     </footer>
   </body>
