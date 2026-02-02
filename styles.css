@@ -193,6 +193,8 @@ a:focus-visible {
 
 .work-copy h3 {
   margin-bottom: var(--s-2);
+  font-size: 1.5rem;
+  line-height: 1.15;
 }
 
 .work-copy p {
@@ -361,6 +363,10 @@ p { margin: 0 0 var(--s-2) 0; }
     padding: var(--s-4);
   }
   .work-media { min-height: 180px; }
+
+  .work-copy h3 {
+    font-size: 1.35rem;
+  }
 
   .name-line { white-space: normal; }
   .nickname { display: inline-block; margin-left: 0.4em; }
