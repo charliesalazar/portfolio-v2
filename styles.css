@@ -1,23 +1,27 @@
 /*
   portfolio-v2 Design System (bold + flat)
-  Warm-only text. No shadows. No “cool” whites.
+  Intent: warm-on-dark palette, strong typography, no shadows.
 */
 
 :root {
+  /* Intent: single font family with width + weight axes */
   --font-sans: "Archivo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
   --font-display: "Archivo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
 
+  /* Intent: typography axis defaults for body vs display */
   --wdth-normal: 100;
   --wdth-display: 125;
   --wght-regular: 450;
   --wght-black: 900;
 
+  /* Intent: layout scale + spacing rhythm */
   --max-w: 1400px;
   --pad-x: 96px;
   --pad-y: 96px;
 
+  /* Intent: spacing scale for consistent vertical rhythm */
   --s-1: 8px;
   --s-2: 12px;
   --s-3: 16px;
@@ -27,20 +31,25 @@
   --s-7: 96px;
   --s-8: 140px;
 
+  /* Intent: warm, high-contrast palette */
   --c-bg: #07070a;
   --c-text: #fffce1;
   --c-muted: rgba(255, 252, 225, 0.78);
   --c-soft: rgba(255, 252, 225, 0.06);
   --c-accent: #ffb43b;
 
+  /* Intent: consistent border weights + radius */
   --border: 2px solid rgba(255, 252, 225, 0.24);
   --border-strong: 2px solid rgba(255, 252, 225, 0.48);
   --border-fat: 4px solid rgba(255, 252, 225, 0.48);
   --radius: 16px;
 }
 
+/* Intent: predictable box model */
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+
+/* Intent: strong underline for links */
 a {
   color: var(--c-text);
   text-decoration: underline;
@@ -48,6 +57,7 @@ a {
   text-underline-offset: 3px;
 }
 
+/* Intent: remove underlines inside work cards */
 .work-link,
 .work-link * {
   text-decoration: none !important;
@@ -57,6 +67,7 @@ a:hover {
   color: var(--c-accent);
 }
 
+/* Intent: base page styling */
 body {
   margin: 0;
   min-height: 100vh;
@@ -114,7 +125,7 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
-/* HERO */
+/* HERO — bold name + tagline */
 .site-header {
   margin-bottom: var(--s-8);
   padding-top: clamp(64px, 10vh, 160px);
@@ -161,7 +172,7 @@ a:focus-visible {
 }
 
 /* SECTIONS */
-/* SELECTED WORK */
+/* SELECTED WORK — grid list of cards */
 .work-list {
   list-style: none;
   padding: 0;
@@ -250,7 +261,7 @@ h3 {
 
 p { margin: 0 0 var(--s-2) 0; }
 
-/* ABOUT */
+/* ABOUT — full-bleed image + aligned text */
 /* Removed .about-inner block as per instructions */
 
 .about-bleed {
@@ -357,7 +368,7 @@ p { margin: 0 0 var(--s-2) 0; }
   text-transform: uppercase;
 }
 
-/* MOBILE */
+/* MOBILE — tighter spacing + stacked cards */
 @media (max-width: 720px) {
   :root { --pad-x: 18px; --pad-y: 48px; --s-7: 64px; --s-8: 96px; }
 

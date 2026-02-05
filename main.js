@@ -1,4 +1,5 @@
 (() => {
+  // Intent: respect reduced-motion preferences and skip animation if GSAP isn't loaded.
   const prefersReduced =
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -7,8 +8,10 @@
     return;
   }
 
+  // Intent: enable ScrollTrigger for scroll-based reveals.
   gsap.registerPlugin(ScrollTrigger);
 
+  // Intent: hero intro sequence to set tone without heavy motion.
   const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
   heroTl
@@ -34,6 +37,7 @@
       "-=0.5"
     );
 
+  // Intent: staggered reveal for each work card on scroll.
   gsap.utils.toArray(".work-item").forEach((item) => {
     gsap.from(item, {
       y: 28,
@@ -48,6 +52,7 @@
     });
   });
 
+  // Intent: gentle reveal for the about portrait.
   gsap.from(".about-photo", {
     y: 40,
     opacity: 0,
@@ -60,6 +65,7 @@
     },
   });
 
+  // Intent: bring in about text after image.
   gsap.from(".about-layout p", {
     y: 20,
     opacity: 0,
@@ -72,6 +78,7 @@
     },
   });
 
+  // Intent: subtle footer heading reveal to close the page.
   gsap.from(".footer-heading", {
     y: 16,
     opacity: 0,
