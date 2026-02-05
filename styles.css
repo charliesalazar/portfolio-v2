@@ -396,26 +396,36 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-modal.is-open {
-  display: grid;
-  place-items: center;
+  display: block;
 }
 
 .case-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(7, 7, 10, 0.7);
+  background: rgba(7, 7, 10, 0.45);
 }
 
 .case-modal-panel {
   position: relative;
-  width: min(1100px, 92vw);
-  max-height: 88vh;
+  width: 100%;
+  height: 100%;
+  max-height: none;
   overflow: auto;
   background: var(--c-bg);
   color: var(--c-text);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 252, 225, 0.18);
+  border-radius: 0;
+  border: none;
   z-index: 1;
+}
+
+/* Hide visible scrollbars in modal while keeping scroll */
+.case-modal-panel {
+  scrollbar-width: none;
+}
+
+.case-modal-panel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .case-modal-header {
@@ -460,7 +470,7 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-modal-body {
-  padding: var(--s-5);
+  padding: clamp(24px, 5vw, 80px);
   display: grid;
   gap: var(--s-5);
 }
@@ -572,17 +582,6 @@ body.modal-open {
   .name { font-size: clamp(3.4rem, 15vw, 5.6rem); letter-spacing: -0.055em; }
   .tagline { font-size: 1.05rem; max-width: 60ch; }
   .footer-links { gap: 12px; }
-
-  .case-modal.is-open {
-    place-items: stretch;
-  }
-
-  .case-modal-panel {
-    width: 100%;
-    height: 100%;
-    max-height: none;
-    border-radius: 0;
-  }
 
   .case-modal-body {
     padding: var(--s-4);
