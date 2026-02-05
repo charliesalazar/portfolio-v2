@@ -52,7 +52,7 @@
 
             <ul class="work-list">
             <li class="work-item">
-              <a class="work-link" href="#" aria-label="Transforming Network Data into Interactive 3D Insights">
+              <a class="work-link" href="#" aria-label="Transforming Network Data into Interactive 3D Insights" data-case="earthview">
                 <div class="work-copy">
                   <h3>Transforming Network Data into Interactive 3D Insights</h3>
                   <p>Empowering users with a dynamic, real-time visualization tool for faster decision-making.</p>
@@ -63,7 +63,7 @@
               </a>
             </li>
             <li class="work-item">
-              <a class="work-link" href="#" aria-label="Improving IT Workflows with Better Monitoring">
+              <a class="work-link" href="#" aria-label="Improving IT Workflows with Better Monitoring" data-case="endpoint">
                 <div class="work-copy">
                   <h3>Improving IT Workflows with Better Monitoring</h3>
                   <p>Enhancing endpoint monitoring with better navigation, customization, and efficiency.</p>
@@ -74,7 +74,7 @@
               </a>
             </li>
             <li class="work-item">
-              <a class="work-link" href="#" aria-label="Improving the platform experience for SolarWinds users">
+              <a class="work-link" href="#" aria-label="Improving the platform experience for SolarWinds users" data-case="solarwinds">
                 <div class="work-copy">
                   <h3>Improving the platform experience for SolarWinds users</h3>
                   <p>Reworked navigation and templates to better reflect how people actually explore and evaluate products.</p>
@@ -85,7 +85,7 @@
               </a>
             </li>
             <li class="work-item">
-              <a class="work-link" href="#" aria-label="Modernizing eCommerce workflows for industrial buyers">
+              <a class="work-link" href="#" aria-label="Modernizing eCommerce workflows for industrial buyers" data-case="transcat">
                 <div class="work-copy">
                   <h3>Modernizing eCommerce workflows for industrial buyers</h3>
                   <p>A design system and navigation overhaul rooted in real customer feedback.</p>
@@ -150,5 +150,17 @@
 
       </div>
     </footer>
+
+    <!-- Case study modal (full-screen on mobile) -->
+    <div class="case-modal" id="case-modal" hidden aria-hidden="true">
+      <div class="case-modal-backdrop" data-close="true"></div>
+      <div class="case-modal-panel" role="dialog" aria-modal="true" aria-labelledby="case-modal-title">
+        <header class="case-modal-header">
+          <h2 id="case-modal-title">Case Study</h2>
+          <button class="case-modal-close" type="button" aria-label="Close case study">Close</button>
+        </header>
+        <div class="case-modal-body"></div>
+      </div>
+    </div>
   </body>
 </html>
