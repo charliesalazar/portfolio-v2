@@ -181,7 +181,7 @@ a:focus-visible {
   overflow: hidden;
 }
  .work-copy {
-   padding: var(--s-3);
+   padding: var(--s-4);
  }
 
 .work-link:focus-visible {
@@ -194,7 +194,7 @@ a:focus-visible {
 }
 
  .work-copy h3 {
-   margin-bottom: var(--s-2);
+   margin-bottom: var(--s-3);
    font-size: 1.15rem;
    line-height: 1.2;
  }
@@ -330,10 +330,13 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .footer-heading {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: clamp(1.6rem, 4.5vw, 2.6rem);
   font-weight: 900;
-  letter-spacing: 0.18em;
+  letter-spacing: -0.035em;
   text-transform: uppercase;
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" var(--wdth-display), "wght" var(--wght-black);
+  line-height: 1;
 }
 
 .footer-links {
