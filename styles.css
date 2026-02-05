@@ -186,13 +186,13 @@ a:focus-visible {
   grid-template-columns: 1.1fr 0.9fr;
   align-items: stretch;
 
-  border: 3px solid rgba(255, 252, 225, 0.48);
   border-radius: var(--radius);
-  background: rgba(255, 252, 225, 0.03);
+  background: transparent;
   overflow: hidden;
 }
  .work-copy {
    padding: var(--s-4);
+   background: rgba(255, 252, 225, 0.1);
  }
 
 
@@ -207,9 +207,10 @@ a:focus-visible {
 
  .work-copy h3 {
    margin-bottom: var(--s-3);
-   font-size: 1.15rem;
+   font-size: 1.25rem;
    line-height: 1.2;
-   letter-spacing: -0.01em;
+   letter-spacing: -0.02em;
+   font-weight: 900;
  }
 
 .work-copy p {
@@ -217,14 +218,13 @@ a:focus-visible {
   color: var(--c-muted);
   max-width: 62ch;
   line-height: 1.7;
-  font-size: 0.98rem;
+  font-size: 0.96rem;
 }
 
 .work-media {
   width: 100%;
   margin: 0;
   border-radius: 0;
-  border: 1px solid rgba(255, 252, 225, 0.24);
 }
 
 .work-media img {
@@ -397,11 +397,13 @@ p { margin: 0 0 var(--s-2) 0; }
   .work-link {
     grid-template-columns: 1fr;
     gap: var(--s-4);
+    background: rgba(255, 252, 225, 0.18);
   }
 
 
   .work-copy {
     padding: var(--s-4);
+    background: transparent;
   }
 
 
