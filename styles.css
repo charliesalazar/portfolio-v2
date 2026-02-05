@@ -93,6 +93,7 @@ body {
     height: 44px;
     border-radius: 50%;
     background: rgba(255, 180, 59, 0.75);
+    border: 2px solid #000;
     mix-blend-mode: screen;
     pointer-events: none;
     transform: translate(-50%, -50%) scale(1);
