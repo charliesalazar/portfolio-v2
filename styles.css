@@ -80,6 +80,68 @@ body {
   line-height: 1.45;
 }
 
+@media (pointer: fine) {
+  body {
+    cursor: none;
+  }
+
+  .cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 180, 59, 0.75);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(1);
+    transition: transform 140ms ease, background-color 140ms ease, opacity 200ms ease;
+    opacity: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #07070a;
+  }
+
+  .cursor-text {
+    font-size: 0.7rem;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+
+  .cursor.is-active {
+    opacity: 1;
+  }
+
+  .cursor.is-link {
+    background: rgba(255, 252, 225, 0.9);
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+
+  .cursor.is-link .cursor-text {
+    opacity: 1;
+  }
+
+  .cursor.is-footer {
+    background: #07070a;
+    mix-blend-mode: normal;
+    color: var(--c-text);
+    box-shadow: 0 0 0 4px rgba(255, 252, 225, 0.95);
+    transform: translate(-50%, -50%) scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor,
+  .cursor * {
+    transition: none !important;
+  }
+}
+
 .page {
   max-width: var(--max-w);
   margin-left: auto;
@@ -192,7 +254,7 @@ a:focus-visible {
 }
  .work-copy {
    padding: var(--s-4);
-   background: rgba(255, 252, 225, 0.1);
+   background: rgba(255, 252, 225, 0.18);
  }
 
 

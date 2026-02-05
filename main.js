@@ -1,4 +1,31 @@
 (() => {
+  const cursor = document.querySelector(".cursor");
+  if (cursor) {
+    const moveCursor = (event) => {
+      const { clientX, clientY } = event;
+      cursor.style.left = `${clientX}px`;
+      cursor.style.top = `${clientY}px`;
+    };
+
+    const showCursor = () => cursor.classList.add("is-active");
+    const hideCursor = () => cursor.classList.remove("is-active");
+
+    const setLinkState = (event) => {
+      const target = event.target.closest(
+        "a, button, [role=\"button\"], input, textarea, select"
+      );
+      const isLink = Boolean(target);
+      const isFooter = target && target.closest(".site-footer");
+      cursor.classList.toggle("is-link", isLink);
+      cursor.classList.toggle("is-footer", Boolean(isFooter));
+    };
+
+    window.addEventListener("mousemove", moveCursor, { passive: true });
+    window.addEventListener("mousemove", showCursor, { passive: true });
+    window.addEventListener("mouseleave", hideCursor);
+    window.addEventListener("mouseover", setLinkState);
+  }
+
   // Intent: respect reduced-motion preferences and skip animation if GSAP isn't loaded.
   const prefersReduced =
     window.matchMedia &&
