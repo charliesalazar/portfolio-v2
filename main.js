@@ -1,113 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Carlos (Charlie) Salazar Portfolio</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header>
-    <h1 class="name" aria-label="Carlos Salazar (Charlie)">
-      <span class="name-lines">
-        <span class="name-line">CARLOS</span>
-        <span class="name-line">SALAZAR</span>
-      </span>
-      <span class="nickname">(CHARLIE)</span>
-    </h1>
-  </header>
+(() => {
+  const prefersReduced =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  <main>
-    <section class="case-studies">
-      <!-- Case studies would be listed here -->
-    </section>
-  </main>
+  if (prefersReduced || typeof gsap === "undefined") {
+    return;
+  }
 
-  <footer class="site-footer">
-    <div class="footer-contact">
-      <a href="mailto:charliesalazar@gmail.com">charliesalazar@gmail.com</a>
-      <span class="dot">•</span>
-      <a href="https://linkedin.com/in/charliesalazar" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <span class="dot">•</span>
-      <a href="tel:+13109908984">(310) 990-8984</a>
-    </div>
-    <p class="copyright">© Carlos (Charlie) Salazar</p>
-  </footer>
-</body>
-</html>
-/* General styles */
+  gsap.registerPlugin(ScrollTrigger);
 
-.name {
-  margin: 0;
-  text-transform: uppercase;
-  font-variation-settings: "wdth" 125, "wght" 900;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
-  font-size: clamp(3.4rem, 7.2vw, 6.4rem);
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-}
+  const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-.name-lines {
-  display: inline-block;
-}
+  heroTl
+    .from(".name-line", {
+      yPercent: 40,
+      opacity: 0,
+      duration: 1,
+      stagger: 0.08,
+    })
+    .from(
+      ".nickname",
+      { y: 12, opacity: 0, duration: 0.5 },
+      "-=0.5"
+    )
+    .from(
+      ".tagline",
+      { y: 18, opacity: 0, duration: 0.7 },
+      "-=0.35"
+    )
+    .from(
+      ".rule",
+      { scaleX: 0, transformOrigin: "left center", duration: 0.6 },
+      "-=0.5"
+    );
 
-.name-line {
-  display: block;
-}
+  gsap.utils.toArray(".work-item").forEach((item) => {
+    gsap.from(item, {
+      y: 28,
+      opacity: 0,
+      duration: 0.8,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: item,
+        start: "top 80%",
+        toggleActions: "play none none reverse",
+      },
+    });
+  });
 
-.name:hover .name-line {
-  transform: translateY(-1px);
-}
+  gsap.from(".about-photo", {
+    y: 40,
+    opacity: 0,
+    duration: 1,
+    ease: "power3.out",
+    scrollTrigger: {
+      trigger: ".about-bleed",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
+    },
+  });
 
-.name-line {
-  transition: transform 140ms ease;
-}
+  gsap.from(".about-layout p", {
+    y: 20,
+    opacity: 0,
+    duration: 0.8,
+    ease: "power3.out",
+    scrollTrigger: {
+      trigger: ".about-layout",
+      start: "top 80%",
+      toggleActions: "play none none reverse",
+    },
+  });
 
-.nickname {
-  font-variation-settings: "wdth" 125, "wght" 700;
-  font-size: 0.22em;
-  letter-spacing: 0.14em;
-  margin-left: 6px;
-  opacity: 0.9;
-}
-
-/* Footer styles */
-.site-footer {
-  margin-top: 128px;
-  padding-top: 28px;
-  border-top: 2px solid #000;
-}
-
-.footer-contact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  font-size: 0.95rem;
-  color: #111;
-  margin: 0;
-}
-
-.footer-contact a {
-  color: inherit;
-  text-decoration: none;
-  border-bottom: 2px solid #000;
-  padding-bottom: 2px;
-  font-weight: 700;
-}
-
-.footer-contact a:hover {
-  opacity: 0.75;
-}
-
-.footer-contact .dot {
-  opacity: 0.45;
-}
-
-.site-footer .copyright {
-  margin-top: 18px;
-  font-size: 0.85rem;
-  color: #666;
-}
+  gsap.from(".footer-heading", {
+    y: 16,
+    opacity: 0,
+    duration: 0.6,
+    ease: "power3.out",
+    scrollTrigger: {
+      trigger: ".site-footer",
+      start: "top 85%",
+      toggleActions: "play none none reverse",
+    },
+  });
+})();
