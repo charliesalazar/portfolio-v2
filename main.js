@@ -2,6 +2,8 @@
   const caseStudies = {
     earthview: {
       title: "Transforming Network Data into Interactive 3D Insights",
+      intro:
+        "A smartboard concept that makes global network performance easier to interpret, faster to act on, and more collaborative to use.",
       sections: [
         {
           heading: "About Catchpoint",
@@ -56,6 +58,8 @@
     },
     endpoint: {
       title: "Improving IT Workflows with Better Monitoring",
+      intro:
+        "A redesign of the Endpoint Smartboard to reduce cognitive load and help IT teams identify issues faster.",
       sections: [
         {
           heading: "About Catchpoint",
@@ -130,6 +134,8 @@
     },
     solarwinds: {
       title: "Improving the platform experience for SolarWinds users",
+      intro:
+        "A platform modernization focused on navigation clarity, scalable templates, and a durable design system.",
       sections: [
         {
           heading: "About Slide UX",
@@ -195,6 +201,8 @@
     },
     transcat: {
       title: "Modernizing eCommerce workflows for industrial buyers",
+      intro:
+        "A full eCommerce overhaul to improve discoverability, navigation, and long‑term scalability.",
       sections: [
         {
           heading: "About Slide UX",
@@ -257,25 +265,29 @@
 
   const modal = document.querySelector("#case-modal");
   const modalPanel = modal ? modal.querySelector(".case-modal-panel") : null;
-  const modalTitle = modal ? modal.querySelector("#case-modal-title") : null;
   const modalBody = modal ? modal.querySelector(".case-modal-body") : null;
   const closeButton = modal ? modal.querySelector(".case-modal-close") : null;
   let lastFocused = null;
 
   const renderCase = (key) => {
     const data = caseStudies[key];
-    if (!data || !modalTitle || !modalBody) return;
-    modalTitle.textContent = data.title;
-    modalBody.innerHTML = data.sections
-      .map(
-        (section) => `
-          <section class="case-section">
-            <h3>${section.heading}</h3>
-            <p>${section.body}</p>
-          </section>
-        `
-      )
-      .join("");
+    if (!data || !modalBody) return;
+    modalBody.innerHTML = `
+      <div class="case-lede">
+        <h1 class="case-title">${data.title}</h1>
+        <p class="case-intro">${data.intro}</p>
+      </div>
+      ${data.sections
+        .map(
+          (section) => `
+            <section class="case-section">
+              <h3>${section.heading}</h3>
+              <p>${section.body}</p>
+            </section>
+          `
+        )
+        .join("")}
+    `;
   };
 
   const openModal = (key) => {
