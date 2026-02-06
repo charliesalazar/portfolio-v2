@@ -14,6 +14,10 @@
           heading: "Design Challenge",
           body:
             "Design a new smartboard to visualize real-time network performance in a way that’s easy to understand and act on. The goal was to give IT teams a more intuitive way to monitor global activity, surface key metrics, and make faster decisions.",
+          image: {
+            src: "assets/case-earthview/hero.png",
+            alt: "Earthview smartboard overview",
+          },
         },
         {
           heading: "Users",
@@ -43,11 +47,19 @@
           heading: "Solution",
           body:
             "The Earthview Smartboard features a 3D globe that allows users to visualize global network performance in real time. Key features include: interactive zoom and data clustering for faster insights, a simplified visual hierarchy to highlight critical metrics, and seamless integration with Catchpoint’s broader ecosystem.",
+          image: {
+            src: "assets/case-earthview/solution.png",
+            alt: "Earthview smartboard solution details",
+          },
         },
         {
           heading: "Outcome",
           body:
             "Reduction in time spent analyzing performance data by nearly 30%. As part of Catchpoint’s Symphony UI Feature Suite, IT adoption increased 43 points to 86% in less than a year. Positive feedback from stakeholders for improving both usability and visual appeal.",
+          image: {
+            src: "assets/case-earthview/insight.png",
+            alt: "Earthview insight visuals",
+          },
         },
         {
           heading: "Reflection",
@@ -70,6 +82,10 @@
           heading: "Design Challenge",
           body:
             "IT teams relied on the Endpoint Smartboard to troubleshoot remote network issues, but the original version stacked chart after chart into one long, scrolling page and lacked clarity. Our challenge was to redesign the experience so users could quickly correlate key metrics and identify root causes, without frustration or guesswork.",
+          image: {
+            src: "assets/case-endpoint/hero.png",
+            alt: "Endpoint Smartboard overview",
+          },
         },
         {
           heading: "Users",
@@ -104,6 +120,10 @@
           heading: "Events & Issues Sidebar",
           body:
             "A new sidebar surfaces real-time alerts like VPN slowness, Wi‑Fi changes, and app load issues without requiring users to dig through metrics.",
+          image: {
+            src: "assets/case-endpoint/sidebar.png",
+            alt: "Events and Issues sidebar highlighting alerts",
+          },
         },
         {
           heading: "Visual Markers",
@@ -119,6 +139,10 @@
           heading: "Redesigned Smartboard",
           body:
             "Customizable dashboards tailored to specific roles. Simplified navigation for faster access to critical data. Enhanced data visualizations with a clear, actionable hierarchy. A cohesive interface aligned with Catchpoint’s branding.",
+          image: {
+            src: "assets/case-endpoint/dashboard.png",
+            alt: "Redesigned endpoint dashboard layout",
+          },
         },
         {
           heading: "Outcome",
@@ -146,6 +170,10 @@
           heading: "Scope",
           body:
             "SolarWinds needed a major upgrade to its digital platform. We redesigned navigation, modernized key product pages, and established a scalable design system for desktop, tablet, and mobile. Our approach combined UX audits, competitive research, journey mapping, audience research, and collaboration with marketing and product teams.",
+          image: {
+            src: "assets/case-solarwinds/hero.jpg",
+            alt: "SolarWinds platform redesign overview",
+          },
         },
         {
           heading: "Team",
@@ -166,11 +194,19 @@
           heading: "Wireframes & Collaboration",
           body:
             "Created and iterated on wireframes for homepage and Level 2–4 pages. Proposed a capability-first navigation structure to reduce brand-name confusion, and mapped user journeys based on key actions like finding solutions and verifying credibility.",
+          image: {
+            src: "assets/case-solarwinds/navigation.png",
+            alt: "Navigation and wireframe exploration",
+          },
         },
         {
           heading: "High-Fidelity Mockups",
           body:
             "Delivered polished designs for homepage, product listings, solutions pages, and mobile-first templates. Aligned navigation and storytelling flows with best practices observed in competitor research.",
+          image: {
+            src: "assets/case-solarwinds/templates.png",
+            alt: "High-fidelity templates and page designs",
+          },
         },
         {
           heading: "Design System",
@@ -213,6 +249,10 @@
           heading: "Design Challenge",
           body:
             "Transcat wanted to upgrade Transcat.com and Pipettes.com to make them easier to navigate, use, and find through search. We set out to modernize the experience, organize content more clearly, and streamline how people get what they need.",
+          image: {
+            src: "assets/case-transcat/hero.jpg",
+            alt: "Transcat ecommerce redesign overview",
+          },
         },
         {
           heading: "Team",
@@ -233,11 +273,19 @@
           heading: "High-Fidelity Mockups",
           body:
             "Created high-fidelity mockups for product pages, brand detail pages, and cart interactions. Redesigned navigation to support easier browsing across categories, brands, and device types.",
+          image: {
+            src: "assets/case-transcat/pdp.png",
+            alt: "Product detail page and cart mockups",
+          },
         },
         {
           heading: "Design System",
           body:
             "Co-built a reusable, scalable design system in Figma. Created components for cards, buttons, navigation, breadcrumbs, and more, documenting patterns to support devs and ensure consistency.",
+          image: {
+            src: "assets/case-transcat/navigation.png",
+            alt: "Navigation and category browsing patterns",
+          },
         },
         {
           heading: "Usability Testing & Iteration",
@@ -267,7 +315,11 @@
   const modalPanel = modal ? modal.querySelector(".case-modal-panel") : null;
   const modalBody = modal ? modal.querySelector(".case-modal-body") : null;
   const closeButton = modal ? modal.querySelector(".case-modal-close") : null;
+  const lightbox = document.querySelector("#lightbox");
+  const lightboxImage = lightbox ? lightbox.querySelector("#lightbox-image") : null;
+  const lightboxClose = lightbox ? lightbox.querySelector(".lightbox-close") : null;
   let lastFocused = null;
+  let lastFocusedLightbox = null;
 
   const renderCase = (key) => {
     const data = caseStudies[key];
@@ -281,8 +333,19 @@
         .map(
           (section) => `
             <section class="case-section">
-              <h3>${section.heading}</h3>
-              <p>${section.body}</p>
+              <div class="case-section-text">
+                <h3>${section.heading}</h3>
+                <p>${section.body}</p>
+              </div>
+              ${
+                section.image
+                  ? `
+                    <figure class="case-media">
+                      <img src="${section.image.src}" alt="${section.image.alt}">
+                    </figure>
+                  `
+                  : ""
+              }
             </section>
           `
         )
@@ -316,7 +379,37 @@
     if (lastFocused && lastFocused.focus) lastFocused.focus();
   };
 
+  const openLightbox = (src, alt) => {
+    if (!lightbox || !lightboxImage) return;
+    lastFocusedLightbox = document.activeElement;
+    lightboxImage.src = src;
+    lightboxImage.alt = alt || "";
+    lightbox.classList.add("is-open");
+    lightbox.removeAttribute("hidden");
+    lightbox.setAttribute("aria-hidden", "false");
+    if (lightboxClose) lightboxClose.focus();
+  };
+
+  const closeLightbox = () => {
+    if (!lightbox) return;
+    lightbox.classList.remove("is-open");
+    lightbox.setAttribute("hidden", "");
+    lightbox.setAttribute("aria-hidden", "true");
+    if (lightboxImage) {
+      lightboxImage.src = "";
+      lightboxImage.alt = "";
+    }
+    if (lastFocusedLightbox && lastFocusedLightbox.focus) lastFocusedLightbox.focus();
+  };
+
   const handleKeydown = (event) => {
+    if (lightbox && lightbox.classList.contains("is-open")) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeLightbox();
+      }
+      return;
+    }
     if (!modal || !modal.classList.contains("is-open")) return;
     if (event.key === "Escape") {
       event.preventDefault();
@@ -349,6 +442,14 @@
     document.addEventListener("keydown", handleKeydown);
   }
 
+  if (lightbox) {
+    lightbox.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest("[data-lightbox-close=\"true\"]")) closeLightbox();
+    });
+    if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
+  }
+
   document.querySelectorAll(".work-link[data-case]").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
@@ -356,6 +457,16 @@
       if (key) openModal(key);
     });
   });
+
+  if (modalBody) {
+    modalBody.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (target.tagName.toLowerCase() === "img" && target.closest(".case-media")) {
+        openLightbox(target.currentSrc || target.src, target.alt);
+      }
+    });
+  }
 
   const openFromHash = () => {
     if (!location.hash.startsWith("#case-")) return;

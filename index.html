@@ -154,12 +154,20 @@
     <!-- Case study modal (full-screen on mobile) -->
     <div class="case-modal" id="case-modal" hidden aria-hidden="true">
       <div class="case-modal-backdrop" data-close="true"></div>
-      <div class="case-modal-panel" role="dialog" aria-modal="true" aria-labelledby="case-modal-title">
-        <header class="case-modal-header">
-          <h2 id="case-modal-title">Case Study</h2>
-          <button class="case-modal-close" type="button" aria-label="Close case study">Close</button>
-        </header>
+      <div class="case-modal-panel" role="dialog" aria-modal="true" aria-label="Case study">
+        <button class="case-modal-close" type="button" aria-label="Close case study">Close</button>
         <div class="case-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Lightbox for case study images -->
+    <div class="lightbox" id="lightbox" hidden aria-hidden="true">
+      <div class="lightbox-backdrop" data-lightbox-close="true"></div>
+      <div class="lightbox-panel" role="dialog" aria-modal="true" aria-label="Image viewer">
+        <button class="lightbox-close" type="button" aria-label="Close image">Close</button>
+        <figure class="lightbox-figure">
+          <img id="lightbox-image" alt="" />
+        </figure>
       </div>
     </div>
   </body>
