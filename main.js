@@ -35,11 +35,15 @@
           type: "image",
           src: "assets/case-earthview/gallery/5de069d4-92d8-4737-a96c-cc5c822215d8_rw_1200.jpg",
           alt: "earthview case study image",
+          caption:
+            "User Research: Interviewed network engineers and IT managers to understand their workflows, pain points, and expectations. Used analytics data to identify common user behaviors and bottlenecks in the current workflow.",
         },
         {
           type: "image",
           src: "assets/case-earthview/gallery/15e8ad1a-e742-4816-93b5-0888bf80caf9_rw_1920.png",
           alt: "earthview case study image",
+          caption:
+            "Competitive Analysis: Conducted a detailed review of competitors in the network monitoring space, analyzing their visualization tools, interaction patterns, and data filtering capabilities. Identified strengths to adopt (e.g., interactive zoom and data clustering) and weaknesses to avoid (e.g., overwhelming visual noise).",
         },
         {
           type: "text",
@@ -875,9 +879,10 @@ const splitByHeadings = (text) => {
       const formatted = heading && ["Users", "My Role"].includes(heading)
         ? formatList(heading, trimmed)
         : formatBody(trimmed);
+      const titleOnly = Boolean(heading && !trimmed);
       return `
         <div class="case-text-wrap">
-          <div class="case-block">
+          <div class="case-block${titleOnly ? " case-block--title-only" : ""}">
             ${heading ? `<h3>${heading}</h3>` : ""}
             ${trimmed ? (formatted.startsWith("<ul") ? formatted : `<p>${formatted}</p>`) : ""}
           </div>
@@ -887,27 +892,39 @@ const splitByHeadings = (text) => {
 
     const renderItems = (items) => {
       let html = "";
+      let prevTitleOnly = false;
+      const skip = new Set();
       for (let i = 0; i < items.length; i += 1) {
+        if (skip.has(i)) continue;
         const item = items[i];
         if (item.type === "image") {
+          const caption = item.caption
+            ? `<figcaption class="case-caption"><span class="case-caption-label">${item.caption.split(":")[0]}:</span>${item.caption.split(":").slice(1).join(":")}</figcaption>`
+            : "";
           html += `
-            <div class="case-bleed">
+            <div class="case-bleed${prevTitleOnly ? " case-bleed--after-title" : ""}">
               <figure class="case-media case-media-block">
-                <img src="${item.src}" alt="${item.alt}" loading="lazy">
+                <div class="case-media-frame">
+                  <img src="${item.src}" alt="${item.alt}" loading="lazy">
+                </div>
+                ${caption}
               </figure>
             </div>
           `;
+          prevTitleOnly = false;
           continue;
         }
 
         const body = (item.body || "").trim();
         if (item.heading && item.body) {
           html += renderSection(item.heading, item.body);
+          prevTitleOnly = false;
           continue;
         }
 
         if (item.heading && !item.body) {
           html += renderSection(item.heading, "");
+          prevTitleOnly = true;
           continue;
         }
 
@@ -919,7 +936,24 @@ const splitByHeadings = (text) => {
             const nextBody = (next.body || "").trim();
             if (nextBody) {
               html += renderSection(body, nextBody);
+              prevTitleOnly = false;
               i += 1;
+              continue;
+            }
+          }
+          if (next && next.type === "image") {
+            let foundIndex = -1;
+            for (let j = i + 2; j < items.length; j += 1) {
+              if (items[j].type !== "text") continue;
+              const candidate = (items[j].body || "").trim();
+              if (!candidate || isHeadingToken(candidate)) continue;
+              foundIndex = j;
+              break;
+            }
+            if (foundIndex !== -1) {
+              html += renderSection(body, items[foundIndex].body);
+              skip.add(foundIndex);
+              prevTitleOnly = false;
               continue;
             }
           }
@@ -934,6 +968,7 @@ const splitByHeadings = (text) => {
         }
 
         html += renderSection("", body);
+        prevTitleOnly = false;
       }
       return html;
     };

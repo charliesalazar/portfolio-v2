@@ -508,11 +508,11 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-text-wrap + .case-text-wrap {
-  margin-top: 28px;
+  margin-top: 36px;
 }
 
 .case-media-block {
-  margin: 36px 0;
+  margin: 28px 0;
 }
 
 .case-lead {
@@ -534,10 +534,14 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .case-media {
   margin: 0;
+  background: transparent;
+  width: 100%;
+}
+
+.case-media-frame {
   border-radius: 16px;
   overflow: hidden;
   background: transparent;
-  width: 100%;
 }
 
 .case-bleed .case-media {
@@ -556,6 +560,31 @@ p { margin: 0 0 var(--s-2) 0; }
 .case-bleed .case-media img {
   max-height: none;
   object-fit: contain;
+}
+
+.case-caption {
+  margin: 12px 0 0 0;
+  color: var(--c-text);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.case-caption-label {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-right: 6px;
+}
+
+.case-block h3 {
+  margin-top: 12px;
+}
+
+.case-block--title-only {
+  margin-bottom: 8px;
+}
+
+.case-bleed--after-title .case-media-block {
+  margin-top: 16px;
 }
 
 body.modal-open {
