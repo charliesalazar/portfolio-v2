@@ -418,16 +418,6 @@ p { margin: 0 0 var(--s-2) 0; }
   z-index: 1;
 }
 
-/* Hide visible scrollbars in modal while keeping scroll */
-.case-modal-panel {
-  scrollbar-width: none;
-}
-
-.case-modal-panel::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
 .case-modal-close {
   position: fixed;
   top: clamp(16px, 3vw, 32px);
@@ -450,15 +440,34 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-modal-body {
-  padding: clamp(24px, 5vw, 80px);
+  padding: clamp(20px, 3.5vw, 56px);
   display: grid;
-  gap: var(--s-6);
+  gap: 24px;
+  justify-items: center;
+}
+
+.case-flow {
+  width: 100%;
+  margin: 0;
+  display: grid;
+  gap: 28px;
+  justify-items: center;
+}
+
+.case-text-wrap {
+  width: min(720px, 100%);
+  margin: 0 auto;
+}
+
+.case-bleed {
+  width: min(720px, 100%);
+  margin: 0 auto;
 }
 
 .case-lede {
   display: grid;
-  gap: var(--s-3);
-  max-width: 72ch;
+  gap: var(--s-2);
+  max-width: 720px;
 }
 
 .case-title {
@@ -471,44 +480,83 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .case-intro {
   margin: 0;
-  color: var(--c-muted);
-  font-size: 1.05rem;
-  line-height: 1.7;
+  color: var(--c-text);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
-.case-section h3 {
-  margin: 0 0 var(--s-2) 0;
-  font-size: 1.05rem;
+.case-block h3 {
+  margin: 0;
+  font-size: 1rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 900;
 }
 
-.case-section p {
+.case-block p {
   margin: 0;
-  color: var(--c-muted);
+  color: var(--c-text);
   max-width: 70ch;
+  line-height: 1.5;
 }
 
-.case-section {
-  padding-top: var(--s-4);
-  border-top: 1px solid rgba(255, 252, 225, 0.12);
+.case-block {
   display: grid;
-  gap: var(--s-3);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+.case-text-wrap + .case-text-wrap {
+  margin-top: 28px;
+}
+
+.case-media-block {
+  margin: 36px 0;
+}
+
+.case-lead {
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.case-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.case-list li {
+  margin: 0;
 }
 
 .case-media {
   margin: 0;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
-  background: rgba(255, 252, 225, 0.06);
+  background: transparent;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.case-bleed .case-media {
+  border-radius: 16px;
 }
 
 .case-media img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
   display: block;
   cursor: zoom-in;
+}
+
+.case-bleed .case-media img {
+  max-height: none;
+  object-fit: cover;
 }
 
 body.modal-open {
