@@ -440,7 +440,7 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-modal-body {
-  padding: clamp(20px, 3.5vw, 56px);
+  padding: clamp(20px, 3.5vw, 56px) clamp(20px, 3.5vw, 56px) clamp(84px, 10vw, 140px);
   display: grid;
   gap: 24px;
   justify-items: center;
@@ -452,6 +452,14 @@ p { margin: 0 0 var(--s-2) 0; }
   display: grid;
   gap: 28px;
   justify-items: center;
+}
+
+.case-inline-frame {
+  width: min(980px, 100%);
+  min-height: 82vh;
+  border: 0;
+  border-radius: 16px;
+  background: var(--bg-ink);
 }
 
 .case-text-wrap {
@@ -749,6 +757,6 @@ body.modal-open {
   .footer-links { gap: 12px; }
 
   .case-modal-body {
-    padding: var(--s-4);
+    padding: var(--s-4) var(--s-4) calc(var(--s-7) + var(--s-2));
   }
 }
