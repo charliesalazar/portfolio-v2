@@ -1,4 +1,5 @@
 (() => {
+  // Case registry: card keys map to external case-study sources.
   const caseStudies = {
     earthview: {
       title: "Transforming Network Data into Interactive 3D Insights",
@@ -31,6 +32,7 @@
   const lightboxClose = lightbox ? lightbox.querySelector(".lightbox-close") : null;
   let lastFocused = null;
   let lastFocusedLightbox = null;
+  // In-memory cache avoids re-fetching case HTML on repeated opens.
   const externalCaseCache = new Map();
 
   const loadExternalCase = async (key, path) => {
@@ -42,12 +44,14 @@
       const html = await response.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, "text/html");
+      // Prefer explicit case root; fallback keeps older files compatible.
       const content =
         doc.querySelector(`[data-case-content="${key}"]`) ||
         doc.querySelector("[data-case-content]") ||
         doc.querySelector("article");
       if (!content) return null;
       const base = new URL(path, window.location.href);
+      // Rebase relative image paths so case files stay self-contained.
       content.querySelectorAll("img[src]").forEach((img) => {
         const src = img.getAttribute("src");
         if (!src) return;
@@ -65,6 +69,7 @@
     const data = caseStudies[key];
     if (!data || !modalBody) return false;
 
+    // `file://` mode cannot reliably fetch external HTML, so iframe fallback is required.
     if (data.external && window.location.protocol === "file:") {
       modalBody.innerHTML = `
         <div class="case-flow">
@@ -86,6 +91,7 @@
         return true;
       }
     }
+    // Network or parsing failures fallback to iframe so content still loads.
     modalBody.innerHTML = `
       <div class="case-flow">
         <iframe
@@ -116,6 +122,7 @@
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
     if (closeButton) closeButton.focus();
+    // Keep URL in sync so deep links and back/forward navigation work.
     if (location.hash !== `#case-${key}`) {
       history.pushState(null, "", `#case-${key}`);
     }
@@ -158,6 +165,7 @@
   };
 
   const handleKeydown = (event) => {
+    // Lightbox owns Escape while open so modal Escape handling does not conflict.
     if (lightbox && lightbox.classList.contains("is-open")) {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -172,6 +180,7 @@
       return;
     }
     if (event.key === "Tab" && modalPanel) {
+      // Trap focus inside the modal for keyboard navigation.
       const focusable = modalPanel.querySelectorAll(
         "a[href], button, textarea, input, select, [tabindex]:not([tabindex='-1'])"
       );
@@ -208,6 +217,7 @@
       const key = link.getAttribute("data-case");
       if (!key) return;
       const opened = await openModal(key);
+      // Direct navigation fallback if modal rendering fails.
       if (!opened && link.href) {
         window.location.href = link.href;
       }
@@ -218,6 +228,7 @@
     modalBody.addEventListener("click", (event) => {
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
+      // Only case-media images open the lightbox.
       if (target.tagName.toLowerCase() === "img" && target.closest(".case-media")) {
         openLightbox(target.currentSrc || target.src, target.alt);
       }
@@ -225,6 +236,7 @@
   }
 
   const openFromHash = async () => {
+    // Deep-link support: opening /#case-key launches the matching modal.
     if (!location.hash.startsWith("#case-")) return;
     const key = location.hash.replace("#case-", "");
     if (caseStudies[key]) await openModal(key);
@@ -242,6 +254,7 @@
 
   const cursor = document.querySelector(".cursor");
   if (cursor) {
+    // Custom cursor is enhancement-only and only active on pointer-capable devices.
     const moveCursor = (event) => {
       const { clientX, clientY } = event;
       cursor.style.left = `${clientX}px`;
@@ -267,7 +280,7 @@
     window.addEventListener("mouseover", setLinkState);
   }
 
-  // Intent: respect reduced-motion preferences and skip animation if GSAP isn't loaded.
+  // Motion guard: honor reduced-motion and skip if GSAP is unavailable.
   const prefersReduced =
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -276,10 +289,10 @@
     return;
   }
 
-  // Intent: enable ScrollTrigger for scroll-based reveals.
+  // Enable scroll-based reveal triggers.
   gsap.registerPlugin(ScrollTrigger);
 
-  // Intent: hero intro sequence to set tone without heavy motion.
+  // Hero intro sequence.
   const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
   heroTl
