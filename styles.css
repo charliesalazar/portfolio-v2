@@ -164,30 +164,6 @@ a:focus-visible {
   outline-offset: 3px;
 }
 
-.site-nav {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: rgba(7,7,10,0.85);
-  backdrop-filter: blur(12px);
-}
-
-.site-nav-inner {
-  max-width: var(--max-w);
-  margin: 0 auto;
-  padding: 20px var(--pad-x);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.site-nav a {
-  text-decoration: none;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 /* HERO — bold name + tagline */
 .site-header {
   margin-bottom: var(--s-8);
@@ -294,11 +270,6 @@ a:focus-visible {
   width: 100%;
   height: auto;
   display: block;
-}
-
-.work-img-placeholder {
-  width: 100%;
-  height: 100%;
 }
 
 section { margin-bottom: var(--s-8); }
@@ -459,7 +430,7 @@ p { margin: 0 0 var(--s-2) 0; }
   min-height: 82vh;
   border: 0;
   border-radius: 16px;
-  background: var(--bg-ink);
+  background: var(--c-bg);
 }
 
 .case-text-wrap {
@@ -494,7 +465,7 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-block h3 {
-  margin: 0;
+  margin: 12px 0 0 0;
   font-size: 1rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -581,10 +552,6 @@ p { margin: 0 0 var(--s-2) 0; }
   font-weight: 800;
   letter-spacing: 0.02em;
   margin-right: 6px;
-}
-
-.case-block h3 {
-  margin-top: 12px;
 }
 
 .case-block--title-only {
