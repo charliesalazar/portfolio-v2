@@ -496,7 +496,7 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-block h3 {
-  margin: 12px 0 0 0;
+  margin: 0;
   font-size: 1rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -519,6 +519,14 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .case-text-wrap + .case-text-wrap {
   margin-top: 36px;
+}
+
+.case-bleed + .case-text-wrap {
+  margin-top: 36px;
+}
+
+.case-text-wrap + .case-bleed {
+  margin-top: 20px;
 }
 
 .case-media-block {
@@ -576,7 +584,7 @@ p { margin: 0 0 var(--s-2) 0; }
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .case-gallery-2up .case-media {
@@ -585,12 +593,13 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .case-gallery-2up .case-media-frame {
   aspect-ratio: 16 / 9;
+  border-radius: 0;
 }
 
 .case-gallery-2up .case-media img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .case-caption {
