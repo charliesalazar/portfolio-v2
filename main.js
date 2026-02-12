@@ -37,9 +37,14 @@
 
   const loadExternalCase = async (key, path) => {
     if (!path) return null;
-    if (externalCaseCache.has(key)) return externalCaseCache.get(key);
+    const isLocalDev =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+
+    if (!isLocalDev && externalCaseCache.has(key)) return externalCaseCache.get(key);
     try {
-      const response = await fetch(path, { cache: "no-store" });
+      const requestPath = isLocalDev ? `${path}?t=${Date.now()}` : path;
+      const response = await fetch(requestPath, { cache: "no-store" });
       if (!response.ok) return null;
       const html = await response.text();
       const parser = new DOMParser();
@@ -58,7 +63,7 @@
         img.setAttribute("src", new URL(src, base).href);
       });
       const markup = `<div class="case-flow">${content.innerHTML}</div>`;
-      externalCaseCache.set(key, markup);
+      if (!isLocalDev) externalCaseCache.set(key, markup);
       return markup;
     } catch {
       return null;

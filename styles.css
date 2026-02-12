@@ -533,9 +533,24 @@ p { margin: 0 0 var(--s-2) 0; }
   margin: 28px 0;
 }
 
-.case-lead {
-  font-weight: 900;
-  letter-spacing: 0.04em;
+.case-block strong.case-lead {
+  font-weight: 700 !important;
+  font-variation-settings: "wght" 700 !important;
+  letter-spacing: 0.02em;
+}
+
+.case-deliverables-gallery {
+  display: grid;
+  row-gap: 8px;
+  column-gap: 8px;
+}
+
+.case-deliverables-gallery .case-media-block {
+  margin: 0;
+}
+
+.case-deliverables-gallery .case-gallery-2up {
+  gap: 8px;
 }
 
 .case-list {
@@ -610,7 +625,8 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-caption-label {
-  font-weight: 800;
+  font-weight: 700;
+  font-variation-settings: "wght" 700;
   letter-spacing: 0.02em;
   margin-right: 6px;
 }
