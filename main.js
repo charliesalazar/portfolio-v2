@@ -35,6 +35,20 @@
   // In-memory cache avoids re-fetching case HTML on repeated opens.
   const externalCaseCache = new Map();
 
+  // Keep dialog naming tied to visible case heading for screen readers.
+  const syncModalLabel = (key) => {
+    if (!modalPanel || !modalBody) return;
+    const heading = modalBody.querySelector("h1, h2");
+    if (heading) {
+      if (!heading.id) heading.id = `case-modal-title-${key}`;
+      modalPanel.setAttribute("aria-labelledby", heading.id);
+      modalPanel.removeAttribute("aria-label");
+      return;
+    }
+    modalPanel.removeAttribute("aria-labelledby");
+    modalPanel.setAttribute("aria-label", "Case study");
+  };
+
   const loadExternalCase = async (key, path) => {
     if (!path) return null;
     const isLocalDev =
@@ -93,6 +107,7 @@
       const externalMarkup = await loadExternalCase(key, data.external);
       if (externalMarkup) {
         modalBody.innerHTML = externalMarkup;
+        syncModalLabel(key);
         return true;
       }
     }
@@ -107,6 +122,7 @@
         ></iframe>
       </div>
     `;
+    syncModalLabel(key);
     return true;
   };
 
@@ -140,6 +156,10 @@
     modal.setAttribute("hidden", "");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
+    if (modalPanel) {
+      modalPanel.removeAttribute("aria-labelledby");
+      modalPanel.setAttribute("aria-label", "Case study");
+    }
     if (location.hash.startsWith("#case-")) {
       history.pushState("", document.title, window.location.pathname + window.location.search);
     }

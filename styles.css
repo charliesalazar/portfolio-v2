@@ -464,12 +464,13 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-text-wrap {
-  /* Shared reading column for long-form case copy. */
+  /* Shared readable column for long-form case copy. */
   width: min(720px, 100%);
   margin: 0 auto;
 }
 
 .case-bleed {
+  /* Gallery/media column aligns to the same reading grid as text. */
   width: min(720px, 100%);
   margin: 0 auto;
 }
@@ -553,6 +554,15 @@ p { margin: 0 0 var(--s-2) 0; }
   gap: 8px;
 }
 
+.case-developer-gallery {
+  display: grid;
+  row-gap: 8px;
+}
+
+.case-developer-gallery .case-media-block {
+  margin: 0;
+}
+
 .case-list {
   list-style: none;
   padding: 0;
@@ -596,6 +606,7 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 .case-gallery-2up {
+  /* Legacy-style gallery rhythm: 2 columns with fixed 8px gutters. */
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -604,6 +615,10 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .case-gallery-2up .case-media {
   margin: 0;
+}
+
+.case-gallery-2up .case-media:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .case-gallery-2up .case-media-frame {
@@ -815,6 +830,15 @@ body.modal-open {
 
   .case-modal-body {
     padding: var(--s-4) var(--s-4) calc(var(--s-7) + var(--s-2));
+  }
+
+  .case-flow {
+    gap: 20px;
+  }
+
+  .case-text-wrap + .case-text-wrap,
+  .case-bleed + .case-text-wrap {
+    margin-top: 24px;
   }
 
   .case-gallery-2up {
