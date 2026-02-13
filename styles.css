@@ -522,9 +522,9 @@ p { margin: 0 0 var(--s-2) 0; }
   margin-top: 36px;
 }
 
-/* When a title-only block is followed by body copy, keep the header-to-copy
-   rhythm tight and consistent across all case-study sections. */
-.case-text-wrap:has(.case-block--title-only) + .case-text-wrap {
+/* Title rows use explicit classes (instead of :has) for reliable spacing. */
+.case-text-wrap--title + .case-text-wrap,
+.case-text-wrap--title + .case-bleed {
   margin-top: 12px;
 }
 
@@ -845,6 +845,11 @@ body.modal-open {
   .case-text-wrap + .case-text-wrap,
   .case-bleed + .case-text-wrap {
     margin-top: 24px;
+  }
+
+  .case-text-wrap--title + .case-text-wrap,
+  .case-text-wrap--title + .case-bleed {
+    margin-top: 10px;
   }
 
   .case-gallery-2up {
