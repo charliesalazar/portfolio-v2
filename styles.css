@@ -748,6 +748,14 @@ body.modal-open {
   border-radius: 18px;
 }
 
+.lightbox-caption {
+  margin-top: 12px;
+  color: var(--c-text);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
 .lightbox-close {
   position: fixed;
   top: clamp(16px, 3vw, 32px);

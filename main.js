@@ -25,6 +25,7 @@
   const closeButton = modal ? modal.querySelector(".case-modal-close") : null;
   const lightbox = document.querySelector("#lightbox");
   const lightboxImage = lightbox ? lightbox.querySelector("#lightbox-image") : null;
+  const lightboxCaption = lightbox ? lightbox.querySelector("#lightbox-caption") : null;
   const lightboxClose = lightbox ? lightbox.querySelector(".lightbox-close") : null;
   let lastFocused = null;
   let lastFocusedLightbox = null;
@@ -162,11 +163,20 @@
     if (lastFocused && lastFocused.focus) lastFocused.focus();
   };
 
-  const openLightbox = (src, alt) => {
+  const openLightbox = (src, alt, caption) => {
     if (!lightbox || !lightboxImage) return;
     lastFocusedLightbox = document.activeElement;
     lightboxImage.src = src;
     lightboxImage.alt = alt || "";
+    if (lightboxCaption) {
+      const captionText = caption ? caption.trim() : "";
+      lightboxCaption.textContent = captionText;
+      if (captionText) {
+        lightboxCaption.removeAttribute("hidden");
+      } else {
+        lightboxCaption.setAttribute("hidden", "");
+      }
+    }
     lightbox.classList.add("is-open");
     lightbox.removeAttribute("hidden");
     lightbox.setAttribute("aria-hidden", "false");
@@ -181,6 +191,10 @@
     if (lightboxImage) {
       lightboxImage.src = "";
       lightboxImage.alt = "";
+    }
+    if (lightboxCaption) {
+      lightboxCaption.textContent = "";
+      lightboxCaption.setAttribute("hidden", "");
     }
     if (lastFocusedLightbox && lastFocusedLightbox.focus) lastFocusedLightbox.focus();
   };
@@ -251,7 +265,10 @@
       if (!(target instanceof HTMLElement)) return;
       // Only case-media images open the lightbox.
       if (target.tagName.toLowerCase() === "img" && target.closest(".case-media")) {
-        openLightbox(target.currentSrc || target.src, target.alt);
+        const figure = target.closest("figure");
+        const captionNode = figure ? figure.querySelector("figcaption") : null;
+        const captionText = captionNode ? captionNode.textContent : target.getAttribute("data-caption");
+        openLightbox(target.currentSrc || target.src, target.alt, captionText);
       }
     });
   }
