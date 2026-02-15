@@ -72,6 +72,10 @@ body {
   line-height: 1.45;
 }
 
+.cursor {
+  display: none;
+}
+
 @media (pointer: fine) {
   body {
     cursor: none;
@@ -98,6 +102,7 @@ body {
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #07070a;
+    display: grid;
   }
 
   .cursor-text {
