@@ -16,7 +16,6 @@
   /* Layout scale */
   --max-w: 1400px;
   --pad-x: 96px;
-  --pad-y: 96px;
 
   /* Spacing scale */
   --s-1: 8px;
@@ -34,13 +33,7 @@
   --c-bg: #07070a;
   --c-text: #fffce1;
   --c-muted: rgba(255, 252, 225, 0.78);
-  --c-soft: rgba(255, 252, 225, 0.06);
   --c-accent: #ffb43b;
-
-  /* Border tokens */
-  --border: 2px solid rgba(255, 252, 225, 0.24);
-  --border-strong: 2px solid rgba(255, 252, 225, 0.48);
-  --border-fat: 4px solid rgba(255, 252, 225, 0.48);
   --radius: 16px;
 }
 
@@ -270,9 +263,10 @@ a:focus-visible {
   display: block;
 }
 
-section { margin-bottom: var(--s-8); }
+/* Homepage section rhythm only (avoid affecting case-study sections). */
+main > section { margin-bottom: var(--s-8); }
 
-section + section {
+main > section + section {
   padding-top: var(--s-7);
 }
 
@@ -850,7 +844,7 @@ body.modal-open {
 
 /* Mobile: tighter spacing and stacked work cards */
 @media (max-width: 720px) {
-  :root { --pad-x: 18px; --pad-y: 48px; --s-7: 64px; --s-8: 96px; }
+  :root { --pad-x: 18px; --s-7: 64px; --s-8: 96px; }
 
   .site-header {
     margin-bottom: var(--s-7);
