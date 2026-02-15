@@ -3,22 +3,18 @@
   const caseStudies = {
     earthview: {
       title: "Transforming Network Data into Interactive 3D Insights",
-      intro: "A smartboard concept that makes global network performance easier to interpret, faster to act on, and more collaborative to use.",
       external: "cases/case_study_earthview.html",
     },
     endpoint: {
       title: "Improving IT Workflows with Better Monitoring",
-      intro: "A redesign of the Endpoint Smartboard to reduce cognitive load and help IT teams identify issues faster.",
       external: "cases/case_study_endpoint.html",
     },
     solarwinds: {
       title: "Improving the platform experience for SolarWinds users",
-      intro: "A platform modernization focused on navigation clarity, scalable templates, and a durable design system.",
       external: "cases/case_study_solarwinds.html",
     },
     transcat: {
       title: "Modernizing eCommerce workflows for industrial buyers",
-      intro: "A full eCommerce overhaul to improve discoverability, navigation, and long‑term scalability.",
       external: "cases/case_study_transcat.html",
     },
   };
