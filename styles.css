@@ -653,6 +653,8 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .case-gallery-2up .case-media {
   margin: 0;
+  position: relative;
+  overflow: hidden;
 }
 
 .case-gallery-2up .case-media:last-child:nth-child(odd) {
@@ -668,6 +670,29 @@ p { margin: 0 0 var(--s-2) 0; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.case-hover-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 10px 12px;
+  background: linear-gradient(to top, rgba(7, 7, 10, 0.88), rgba(7, 7, 10, 0.15));
+  color: var(--c-text);
+  font-size: 0.88rem;
+  line-height: 1.35;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 160ms ease, transform 160ms ease;
+  pointer-events: none;
+}
+
+.case-gallery-2up .case-media:hover .case-hover-caption,
+.case-gallery-2up .case-media:focus-within .case-hover-caption {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .case-caption {

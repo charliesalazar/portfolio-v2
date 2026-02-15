@@ -92,6 +92,26 @@
     }
   };
 
+  const hydrateGalleryHoverCaptions = (root) => {
+    if (!root) return;
+    root.querySelectorAll(".case-gallery-2up .case-media").forEach((figure) => {
+      if (!(figure instanceof HTMLElement)) return;
+      if (figure.querySelector(".case-hover-caption")) return;
+      const img = figure.querySelector("img");
+      if (!(img instanceof HTMLElement)) return;
+      const figcaption = figure.querySelector("figcaption");
+      const captionText =
+        (img.getAttribute("data-caption") || "").trim() ||
+        (figcaption ? figcaption.textContent || "" : "").trim();
+      if (!captionText) return;
+      const overlay = document.createElement("div");
+      overlay.className = "case-hover-caption";
+      overlay.setAttribute("aria-hidden", "true");
+      overlay.textContent = captionText;
+      figure.appendChild(overlay);
+    });
+  };
+
   const renderCase = async (key) => {
     const data = caseStudies[key];
     if (!data || !modalBody) return false;
@@ -115,6 +135,7 @@
       const externalMarkup = await loadExternalCase(key, data.external);
       if (externalMarkup) {
         modalBody.innerHTML = externalMarkup;
+        hydrateGalleryHoverCaptions(modalBody);
         syncModalLabel(key);
         return true;
       }
