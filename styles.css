@@ -746,6 +746,19 @@ body.modal-open {
   object-fit: contain;
   display: block;
   border-radius: 18px;
+  transform-origin: center center;
+  transition: transform 140ms ease;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lightbox-figure img.is-zoomed {
+  cursor: grab;
+}
+
+.lightbox-figure img.is-dragging {
+  cursor: grabbing;
 }
 
 .lightbox-caption {

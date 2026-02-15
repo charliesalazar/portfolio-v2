@@ -27,8 +27,19 @@
   const lightboxImage = lightbox ? lightbox.querySelector("#lightbox-image") : null;
   const lightboxCaption = lightbox ? lightbox.querySelector("#lightbox-caption") : null;
   const lightboxClose = lightbox ? lightbox.querySelector(".lightbox-close") : null;
+  const lightboxBackdrop = lightbox ? lightbox.querySelector(".lightbox-backdrop") : null;
   let lastFocused = null;
   let lastFocusedLightbox = null;
+  const lightboxZoom = {
+    scale: 1,
+    minScale: 1,
+    maxScale: 4,
+    offsetX: 0,
+    offsetY: 0,
+    dragging: false,
+    startX: 0,
+    startY: 0,
+  };
   // In-memory cache avoids re-fetching case HTML on repeated opens.
   const externalCaseCache = new Map();
 
@@ -163,6 +174,38 @@
     if (lastFocused && lastFocused.focus) lastFocused.focus();
   };
 
+  const renderLightboxTransform = () => {
+    if (!lightboxImage) return;
+    lightboxImage.style.transform = `translate(${lightboxZoom.offsetX}px, ${lightboxZoom.offsetY}px) scale(${lightboxZoom.scale})`;
+    lightboxImage.classList.toggle("is-zoomed", lightboxZoom.scale > 1.01);
+  };
+
+  const resetLightboxTransform = () => {
+    lightboxZoom.scale = 1;
+    lightboxZoom.offsetX = 0;
+    lightboxZoom.offsetY = 0;
+    lightboxZoom.dragging = false;
+    if (lightboxImage) lightboxImage.classList.remove("is-dragging");
+    renderLightboxTransform();
+  };
+
+  const setLightboxScale = (nextScale, anchorX = 0, anchorY = 0) => {
+    if (!lightboxImage) return;
+    const prevScale = lightboxZoom.scale;
+    const clamped = Math.max(lightboxZoom.minScale, Math.min(lightboxZoom.maxScale, nextScale));
+    if (clamped === prevScale) return;
+    // Keep the zoom anchored near pointer/double-click point.
+    const scaleRatio = clamped / prevScale;
+    lightboxZoom.offsetX = (lightboxZoom.offsetX - anchorX) * scaleRatio + anchorX;
+    lightboxZoom.offsetY = (lightboxZoom.offsetY - anchorY) * scaleRatio + anchorY;
+    lightboxZoom.scale = clamped;
+    if (lightboxZoom.scale <= 1.01) {
+      lightboxZoom.offsetX = 0;
+      lightboxZoom.offsetY = 0;
+    }
+    renderLightboxTransform();
+  };
+
   const openLightbox = (src, alt, caption) => {
     if (!lightbox || !lightboxImage) return;
     lastFocusedLightbox = document.activeElement;
@@ -180,6 +223,7 @@
     lightbox.classList.add("is-open");
     lightbox.removeAttribute("hidden");
     lightbox.setAttribute("aria-hidden", "false");
+    resetLightboxTransform();
     if (lightboxClose) lightboxClose.focus();
   };
 
@@ -191,11 +235,13 @@
     if (lightboxImage) {
       lightboxImage.src = "";
       lightboxImage.alt = "";
+      lightboxImage.classList.remove("is-dragging");
     }
     if (lightboxCaption) {
       lightboxCaption.textContent = "";
       lightboxCaption.setAttribute("hidden", "");
     }
+    resetLightboxTransform();
     if (lastFocusedLightbox && lastFocusedLightbox.focus) lastFocusedLightbox.focus();
   };
 
@@ -242,8 +288,71 @@
   }
 
   if (lightbox) {
-    lightbox.addEventListener("click", closeLightbox);
+    if (lightboxBackdrop) lightboxBackdrop.addEventListener("click", closeLightbox);
     if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
+  }
+
+  if (lightboxImage) {
+    lightboxImage.addEventListener("dblclick", (event) => {
+      event.preventDefault();
+      const rect = lightboxImage.getBoundingClientRect();
+      const anchorX = event.clientX - (rect.left + rect.width / 2);
+      const anchorY = event.clientY - (rect.top + rect.height / 2);
+      const next = lightboxZoom.scale > 1.01 ? 1 : 2;
+      setLightboxScale(next, anchorX, anchorY);
+    });
+
+    lightboxImage.addEventListener(
+      "wheel",
+      (event) => {
+        if (!lightbox || !lightbox.classList.contains("is-open")) return;
+        event.preventDefault();
+        const rect = lightboxImage.getBoundingClientRect();
+        const anchorX = event.clientX - (rect.left + rect.width / 2);
+        const anchorY = event.clientY - (rect.top + rect.height / 2);
+        const delta = event.deltaY < 0 ? 0.18 : -0.18;
+        setLightboxScale(lightboxZoom.scale + delta, anchorX, anchorY);
+      },
+      { passive: false }
+    );
+
+    lightboxImage.addEventListener("pointerdown", (event) => {
+      if (lightboxZoom.scale <= 1.01) return;
+      lightboxZoom.dragging = true;
+      lightboxZoom.startX = event.clientX;
+      lightboxZoom.startY = event.clientY;
+      lightboxImage.classList.add("is-dragging");
+      lightboxImage.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    });
+
+    lightboxImage.addEventListener("pointermove", (event) => {
+      if (!lightboxZoom.dragging) return;
+      const dx = event.clientX - lightboxZoom.startX;
+      const dy = event.clientY - lightboxZoom.startY;
+      lightboxZoom.startX = event.clientX;
+      lightboxZoom.startY = event.clientY;
+      lightboxZoom.offsetX += dx;
+      lightboxZoom.offsetY += dy;
+      renderLightboxTransform();
+      event.preventDefault();
+    });
+
+    const stopDragging = (event) => {
+      if (!lightboxZoom.dragging) return;
+      lightboxZoom.dragging = false;
+      lightboxImage.classList.remove("is-dragging");
+      if (event && typeof event.pointerId === "number") {
+        try {
+          lightboxImage.releasePointerCapture(event.pointerId);
+        } catch {
+          // Ignore capture release errors from non-captured pointers.
+        }
+      }
+    };
+
+    lightboxImage.addEventListener("pointerup", stopDragging);
+    lightboxImage.addEventListener("pointercancel", stopDragging);
   }
 
   document.querySelectorAll(".work-link[data-case]").forEach((link) => {
