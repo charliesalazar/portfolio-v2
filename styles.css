@@ -27,6 +27,8 @@
   --s-6: 48px;
   --s-7: 96px;
   --s-8: 140px;
+  --case-gap-after-bleed-heading: 88px;
+  --case-gap-after-bleed-heading-mobile: 72px;
 
   /* Color tokens */
   --c-bg: #07070a;
@@ -451,7 +453,9 @@ p { margin: 0 0 var(--s-2) 0; }
   width: 100%;
   margin: 0;
   display: grid;
-  gap: 28px;
+  /* Use explicit sibling spacing rules below; grid gap made title/paragraph/media
+     spacing stack unpredictably (especially in title-only sections). */
+  gap: 0;
   justify-items: center;
 }
 
@@ -522,18 +526,47 @@ p { margin: 0 0 var(--s-2) 0; }
   margin-top: 36px;
 }
 
+/* Create clearer section breaks before title rows. */
+.case-text-wrap + .case-text-wrap--title {
+  margin-top: var(--case-gap-after-bleed-heading);
+}
+
+.case-bleed + .case-text-wrap.case-text-wrap--title {
+  margin-top: var(--case-gap-after-bleed-heading);
+}
+
 /* Title rows use explicit classes (instead of :has) for reliable spacing. */
 .case-text-wrap--title + .case-text-wrap,
 .case-text-wrap--title + .case-bleed {
   margin-top: 12px;
 }
 
+/* Intro block spacing before first body section/media. */
+.case-lede + .case-text-wrap,
+.case-lede + .case-bleed {
+  margin-top: 24px;
+}
+
 .case-bleed + .case-text-wrap {
   margin-top: 36px;
 }
 
+.case-bleed + .case-bleed {
+  margin-top: 24px;
+}
+
+/* Full section headers (h3 + optional body) need stronger separation above.
+   Keep this after generic sibling spacing so it wins the cascade. */
+.case-text-wrap + .case-text-wrap.case-text-wrap--section {
+  margin-top: var(--case-gap-after-bleed-heading);
+}
+
+.case-bleed + .case-text-wrap.case-text-wrap--section {
+  margin-top: var(--case-gap-after-bleed-heading);
+}
+
 .case-text-wrap + .case-bleed {
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .case-media-block {
@@ -585,6 +618,11 @@ p { margin: 0 0 var(--s-2) 0; }
   margin: 0;
   background: transparent;
   width: 100%;
+}
+
+/* Stacked media in a single block need vertical breathing room. */
+.case-bleed > .case-media + .case-media {
+  margin-top: 24px;
 }
 
 .case-media-frame {
@@ -643,6 +681,12 @@ p { margin: 0 0 var(--s-2) 0; }
   color: var(--c-text);
   font-size: 0.95rem;
   line-height: 1.55;
+}
+
+/* When a caption is followed by the next media block, add breathing room. */
+.case-caption + .case-media,
+.case-caption + .case-media-block {
+  margin-top: 24px;
 }
 
 .case-caption-label {
@@ -839,7 +883,7 @@ body.modal-open {
   }
 
   .case-flow {
-    gap: 20px;
+    gap: 0;
   }
 
   .case-text-wrap + .case-text-wrap,
@@ -847,9 +891,29 @@ body.modal-open {
     margin-top: 24px;
   }
 
+  .case-text-wrap + .case-text-wrap--title {
+    margin-top: var(--case-gap-after-bleed-heading-mobile);
+  }
+
+  .case-bleed + .case-text-wrap.case-text-wrap--title {
+    margin-top: var(--case-gap-after-bleed-heading-mobile);
+  }
+
   .case-text-wrap--title + .case-text-wrap,
   .case-text-wrap--title + .case-bleed {
     margin-top: 10px;
+  }
+
+  .case-bleed + .case-bleed {
+    margin-top: 16px;
+  }
+
+  .case-text-wrap + .case-text-wrap.case-text-wrap--section {
+    margin-top: var(--case-gap-after-bleed-heading-mobile);
+  }
+
+  .case-bleed + .case-text-wrap.case-text-wrap--section {
+    margin-top: var(--case-gap-after-bleed-heading-mobile);
   }
 
   .case-gallery-2up {
