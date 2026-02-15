@@ -311,6 +311,14 @@
   if (lightbox) {
     if (lightboxBackdrop) lightboxBackdrop.addEventListener("click", closeLightbox);
     if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (target.closest(".lightbox-close")) return;
+      if (target.closest("#lightbox-image")) return;
+      if (target.closest("#lightbox-caption")) return;
+      closeLightbox();
+    });
   }
 
   if (lightboxImage) {
