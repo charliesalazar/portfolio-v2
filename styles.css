@@ -568,6 +568,7 @@ p { margin: 0 0 var(--s-2) 0; }
   margin-top: 24px;
 }
 
+
 .case-media-block {
   margin: 28px 0;
 }
@@ -968,6 +969,7 @@ body.modal-open {
   .case-bleed + .case-text-wrap.case-text-wrap--section {
     margin-top: var(--case-gap-after-bleed-heading-mobile);
   }
+
 
   .case-gallery-2up {
     grid-template-columns: 1fr;
