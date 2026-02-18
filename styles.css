@@ -709,6 +709,15 @@ p { margin: 0 0 var(--s-2) 0; }
   object-fit: cover;
 }
 
+.case-gallery-2up--no-crop .case-media-frame {
+  background: transparent;
+  aspect-ratio: 4 / 5;
+}
+
+.case-gallery-2up--no-crop .case-media img {
+  object-fit: contain;
+}
+
 .case-hover-caption {
   position: absolute;
   left: 0;
