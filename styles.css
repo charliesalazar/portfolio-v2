@@ -508,9 +508,10 @@ p { margin: 0 0 var(--s-2) 0; }
 .case-title {
   margin: 0;
   font-size: clamp(2rem, 5vw, 3.25rem);
-  font-weight: 900;
+  font-weight: 850;
+  font-variation-settings: "wght" 850;
   letter-spacing: -0.03em;
-  line-height: 1.05;
+  line-height: 1.1;
 }
 
 .case-intro {
