@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Carlos Salazar favicon">
+  <rect width="64" height="64" rx="14" fill="#fffce1" />
+  <path
+    d="M48 19H26c-8 0-14 6-14 13s6 13 14 13h22v-8H26c-3 0-6-2-6-5s3-5 6-5h22z"
+    fill="#07070a"
+  />
+  <circle cx="50" cy="32" r="4" fill="#ffb43b" />
+</svg>
