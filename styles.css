@@ -121,20 +121,19 @@ body {
   }
 
   .cursor.is-link {
-    background: rgba(255, 252, 225, 0.9);
+    background: rgba(255, 252, 225, 0.88);
+    mix-blend-mode: normal;
+    border-color: rgba(7, 7, 10, 0.9);
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 0.95;
+  }
+
+  .cursor.is-cta {
     transform: translate(-50%, -50%) scale(1.5);
   }
 
-  .cursor.is-link .cursor-text {
+  .cursor.is-cta .cursor-text {
     opacity: 1;
-  }
-
-  .cursor.is-footer {
-    background: #07070a;
-    mix-blend-mode: normal;
-    color: var(--c-text);
-    box-shadow: 0 0 0 4px rgba(255, 252, 225, 0.95);
-    transform: translate(-50%, -50%) scale(1.35);
   }
 }
 

@@ -431,23 +431,29 @@
   const cursor = document.querySelector(".cursor");
   if (cursor) {
     // Custom cursor is enhancement-only and only active on pointer-capable devices.
+    const cursorOffsetX = 12;
+    const cursorOffsetY = -12;
+    const highIntentSelector =
+      ".work-link, .case-modal-close, .lightbox-close, .footer-links a, .site-footer a";
+
     const moveCursor = (event) => {
       const { clientX, clientY } = event;
-      cursor.style.left = `${clientX}px`;
-      cursor.style.top = `${clientY}px`;
+      cursor.style.left = `${clientX + cursorOffsetX}px`;
+      cursor.style.top = `${clientY + cursorOffsetY}px`;
     };
 
     const showCursor = () => cursor.classList.add("is-active");
     const hideCursor = () => cursor.classList.remove("is-active");
 
     const setLinkState = (event) => {
+      if (!(event.target instanceof Element)) return;
       const target = event.target.closest(
         "a, button, [role=\"button\"], input, textarea, select"
       );
       const isLink = Boolean(target);
-      const isFooter = target && target.closest(".site-footer");
+      const isHighIntent = Boolean(target && target.closest(highIntentSelector));
       cursor.classList.toggle("is-link", isLink);
-      cursor.classList.toggle("is-footer", Boolean(isFooter));
+      cursor.classList.toggle("is-cta", isHighIntent);
     };
 
     window.addEventListener("mousemove", moveCursor, { passive: true });
