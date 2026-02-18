@@ -576,6 +576,14 @@ p { margin: 0 0 var(--s-2) 0; }
   margin-top: 36px;
 }
 
+.case-bleed + .case-text-wrap.case-text-wrap--after-deliverables {
+  margin-top: 52px;
+}
+
+.case-bleed + .case-text-wrap.case-text-wrap--after-markers {
+  margin-top: 52px;
+}
+
 .case-bleed + .case-bleed {
   margin-top: 24px;
 }
@@ -716,6 +724,30 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .case-gallery-2up--no-crop .case-media img {
   object-fit: contain;
+}
+
+.case-gallery-2up--deliverables .case-media-frame {
+  aspect-ratio: 10 / 9;
+}
+
+.case-gallery-2up--deliverables .case-media img {
+  object-fit: contain;
+}
+
+.case-gallery-2up--before-after .case-media-frame {
+  aspect-ratio: 10 / 9;
+}
+
+.case-gallery-2up--before-after .case-media img {
+  object-fit: contain;
+}
+
+.case-gallery-2up--before-after .case-gallery-label {
+  margin: 6px 0 0;
+  color: rgba(255, 252, 225, 0.84);
+  font-size: 0.85rem;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .case-hover-caption {
