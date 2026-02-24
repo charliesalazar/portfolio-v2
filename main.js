@@ -710,52 +710,91 @@
       const heroIntroChars = heroNameChars.filter(
         (charEl) => !charEl.classList.contains("name-char--space")
       );
-      const heroAChars = heroIntroChars.filter(
-        (charEl) => (charEl.textContent || "").toUpperCase() === "A"
-      );
       const letterVariants = [
-        { x: -84, yPercent: 42, rotate: -12, scale: 0.68, duration: 0.62 },
-        { x: 38, yPercent: -30, rotate: 9, scale: 0.83, duration: 0.48 },
-        { x: -20, yPercent: 116, rotate: -5, scale: 0.9, duration: 0.54 },
-        { x: 24, yPercent: 78, rotate: 6, scale: 0.82, duration: 0.58 },
-        { x: -52, yPercent: -22, rotate: -10, scale: 0.78, duration: 0.6 },
-        { x: 18, yPercent: 132, rotate: 3, scale: 0.88, duration: 0.62 },
-        { x: -30, yPercent: 98, rotate: -7, scale: 0.8, duration: 0.56 },
-        { x: 44, yPercent: -14, rotate: 8, scale: 0.85, duration: 0.52 },
-        { x: -16, yPercent: 124, rotate: -3, scale: 0.9, duration: 0.58 },
-        { x: 28, yPercent: 64, rotate: 5, scale: 0.84, duration: 0.5 },
-        { x: -46, yPercent: -8, rotate: -9, scale: 0.79, duration: 0.64 },
-        { x: 12, yPercent: 108, rotate: 4, scale: 0.87, duration: 0.56 },
-        { x: -26, yPercent: 88, rotate: -6, scale: 0.83, duration: 0.54 },
+        { x: -84, yPercent: 42, rotation: -12, scale: 0.68, duration: 0.62 },
+        { x: 38, yPercent: -30, rotation: 9, scale: 0.83, duration: 0.48 },
+        { x: -20, yPercent: 116, rotation: -5, scale: 0.9, duration: 0.54 },
+        { x: 24, yPercent: 78, rotation: 6, scale: 0.82, duration: 0.58 },
+        { x: -52, yPercent: -22, rotation: -10, scale: 0.78, duration: 0.6 },
+        { x: 18, yPercent: 132, rotation: 3, scale: 0.88, duration: 0.62 },
+        { x: -30, yPercent: 98, rotation: -7, scale: 0.8, duration: 0.56 },
+        { x: 44, yPercent: -14, rotation: 8, scale: 0.85, duration: 0.52 },
+        { x: -16, yPercent: 124, rotation: -3, scale: 0.9, duration: 0.58 },
+        { x: 28, yPercent: 64, rotation: 5, scale: 0.84, duration: 0.5 },
+        { x: -46, yPercent: -8, rotation: -9, scale: 0.79, duration: 0.64 },
+        { x: 12, yPercent: 108, rotation: 4, scale: 0.87, duration: 0.56 },
+        { x: -26, yPercent: 88, rotation: -6, scale: 0.83, duration: 0.54 },
       ];
 
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
       heroTl.addLabel("intro");
+      heroTl.set(
+        heroIntroChars,
+        {
+          opacity: 0,
+          scale: 0,
+          x: 0,
+          yPercent: 0,
+          rotation: 0,
+        },
+        "intro"
+      );
       heroIntroChars.forEach((charEl, index) => {
         const variant = letterVariants[index % letterVariants.length];
-        const charValue = (charEl.textContent || "").toUpperCase();
-        const flipA = charValue === "A" && Math.random() < 0.32;
         // Force phrase build from first letter to last letter.
         const startAt = index * 0.08 + (index % 3) * 0.004;
-        heroTl.from(
+        const useKeyframes = index % 3 === 0 || index === heroIntroChars.length - 1;
+        const toVars = useKeyframes
+          ? {
+              keyframes: [
+                {
+                  x: variant.x * 0.24,
+                  yPercent: variant.yPercent * 0.16,
+                  rotation: variant.rotation * 0.42,
+                  scale: 1.06,
+                  opacity: 1,
+                  duration: 0.2,
+                  ease: "power2.out",
+                },
+                {
+                  x: 0,
+                  yPercent: 0,
+                  rotation: 0,
+                  scale: 1,
+                  opacity: 1,
+                  duration: Math.min(0.5, variant.duration + 0.02),
+                  ease: "back.out(1.65)",
+                },
+              ],
+              immediateRender: false,
+            }
+          : {
+              x: 0,
+              yPercent: 0,
+              rotation: 0,
+              scale: 1,
+              opacity: 1,
+              duration: Math.min(0.62, variant.duration + 0.03),
+              ease: "back.out(1.65)",
+              immediateRender: false,
+            };
+
+        heroTl.fromTo(
           charEl,
           {
             x: variant.x,
             yPercent: variant.yPercent,
             opacity: 0,
-            rotate: variant.rotate,
-            scaleX: flipA ? -variant.scale : variant.scale,
-            scaleY: variant.scale,
-            duration: Math.min(0.62, variant.duration + 0.03),
-            ease: "back.out(1.65)",
+            rotation: variant.rotation,
+            scale: variant.scale,
           },
+          toVars,
           `intro+=${startAt}`
         );
       });
 
       heroTl
         .addLabel("copyIn", "-=0.45")
-        .from(".nickname", { y: 12, opacity: 0, duration: 0.5 }, "copyIn")
         .from(".tagline", { y: 18, opacity: 0, duration: 0.7 }, "copyIn+=0.1")
         .from(
           ".rule",
@@ -763,38 +802,6 @@
           "copyIn+=0.02"
         )
         .addLabel("settle");
-
-      let aSpinTween = null;
-      const aSpinCalls = [];
-      const startOccasionalASpin = () => {
-        if (!heroAChars.length) return;
-        const scheduleNext = () => {
-          const call = gsap.delayedCall(gsap.utils.random(3.2, 6.4), () => {
-            const target = heroAChars[Math.floor(Math.random() * heroAChars.length)];
-            if (!(target instanceof HTMLElement)) {
-              scheduleNext();
-              return;
-            }
-            gsap.set(target, { transformPerspective: 700, transformOrigin: "50% 58%" });
-            aSpinTween = gsap.fromTo(
-              target,
-              { rotateY: 0 },
-              {
-                rotateY: 360,
-                duration: 0.72,
-                ease: "power2.inOut",
-                onComplete: () => {
-                  gsap.set(target, { rotateY: 0 });
-                  scheduleNext();
-                },
-              }
-            );
-          });
-          aSpinCalls.push(call);
-        };
-        scheduleNext();
-      };
-      heroTl.call(startOccasionalASpin, null, "settle+=0.25");
 
       // Keep the hero title subtly "alive" with a gentle breathing loop.
       const heroName = document.querySelector(".name");
@@ -810,37 +817,7 @@
         });
       }
 
-      let cleanupHeroPointer = null;
-      if (heroName && isDesktop && isPointerFine) {
-        // quickTo keeps pointer-driven motion smooth and inexpensive.
-        const toX = gsap.quickTo(heroName, "x", { duration: 0.8, ease: "power3.out" });
-        const toY = gsap.quickTo(heroName, "y", { duration: 0.8, ease: "power3.out" });
-        const toRotateY = gsap.quickTo(heroName, "rotateY", { duration: 0.9, ease: "power3.out" });
-        const toRotateX = gsap.quickTo(heroName, "rotateX", { duration: 0.9, ease: "power3.out" });
-
-        const handleMove = (event) => {
-          const xNorm = event.clientX / window.innerWidth - 0.5;
-          const yNorm = event.clientY / window.innerHeight - 0.5;
-          toX(xNorm * 10);
-          toY(yNorm * 8);
-          toRotateY(xNorm * 3.2);
-          toRotateX(yNorm * -2.4);
-        };
-
-        const handleLeave = () => {
-          toX(0);
-          toY(0);
-          toRotateY(0);
-          toRotateX(0);
-        };
-
-        window.addEventListener("mousemove", handleMove, { passive: true });
-        window.addEventListener("mouseleave", handleLeave, { passive: true });
-        cleanupHeroPointer = () => {
-          window.removeEventListener("mousemove", handleMove);
-          window.removeEventListener("mouseleave", handleLeave);
-        };
-      }
+      const cleanupHeroPointer = null;
 
       let cleanupCardPointer = null;
       if (isPointerFine) {
@@ -944,8 +921,6 @@
       return () => {
         if (cleanupHeroPointer) cleanupHeroPointer();
         if (cleanupCardPointer) cleanupCardPointer();
-        if (aSpinTween) aSpinTween.kill();
-        aSpinCalls.forEach((call) => call.kill());
       };
     }
   );

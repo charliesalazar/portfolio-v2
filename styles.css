@@ -170,8 +170,11 @@ a:focus-visible {
   position: relative;
   overflow: hidden;
   margin-bottom: var(--s-8);
-  padding-top: clamp(64px, 10vh, 160px);
-  padding-bottom: clamp(120px, 18vh, 260px);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: clamp(64px, 10vh, 140px);
+  padding-bottom: clamp(64px, 10vh, 140px);
 }
 
 .site-header .container {
