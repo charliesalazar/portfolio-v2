@@ -167,9 +167,16 @@ a:focus-visible {
 
 /* Hero */
 .site-header {
+  position: relative;
+  overflow: hidden;
   margin-bottom: var(--s-8);
   padding-top: clamp(64px, 10vh, 160px);
   padding-bottom: clamp(120px, 18vh, 260px);
+}
+
+.site-header .container {
+  position: relative;
+  z-index: 2;
 }
 
 .rule {
@@ -193,6 +200,15 @@ a:focus-visible {
 }
 
 .name-line { display: block; white-space: nowrap; }
+
+.name-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.name-char--space {
+  min-width: 0.28em;
+}
 
 .nickname {
   font-weight: 700;

@@ -43,6 +43,21 @@
   // In-memory cache avoids re-fetching case HTML on repeated opens.
   const externalCaseCache = new Map();
 
+  const isResponsiveRaster = (pathname) =>
+    /\.(png|jpe?g)$/i.test(pathname) && !/-640\.(png|jpe?g)$/i.test(pathname);
+
+  const inferSourceWidth = (pathname) => {
+    const legacyMatch = pathname.match(/_rw_(\d+)\.(png|jpe?g)$/i);
+    if (legacyMatch) return Number(legacyMatch[1]);
+    return null;
+  };
+
+  const toVariant = (absoluteUrl, width) => {
+    const variant = new URL(absoluteUrl.href);
+    variant.pathname = variant.pathname.replace(/(\.[a-z0-9]+)$/i, `-${width}$1`);
+    return variant;
+  };
+
   // Keep dialog naming tied to visible case heading for screen readers.
   const syncModalLabel = (key) => {
     if (!modalPanel || !modalBody) return;
@@ -82,7 +97,30 @@
       content.querySelectorAll("img[src]").forEach((img) => {
         const src = img.getAttribute("src");
         if (!src) return;
-        img.setAttribute("src", new URL(src, base).href);
+        const absoluteUrl = new URL(src, base);
+        img.setAttribute("src", absoluteUrl.href);
+      });
+      // Mirror old-site behavior: serve responsive image candidates for case thumbnails.
+      content.querySelectorAll(".case-media img[src]").forEach((img) => {
+        if (img.hasAttribute("srcset")) return;
+        const src = img.getAttribute("src");
+        if (!src) return;
+        const absoluteUrl = new URL(src, base);
+        if (!isResponsiveRaster(absoluteUrl.pathname)) return;
+        const compactUrl = toVariant(absoluteUrl, 640);
+        const mediumUrl = toVariant(absoluteUrl, 960);
+        const maxWidth = inferSourceWidth(absoluteUrl.pathname) || 1920;
+        const compactWidth = Math.min(640, maxWidth);
+        const sourceCandidates = [`${compactUrl.href} ${compactWidth}w`];
+        if (maxWidth > compactWidth) {
+          const mediumWidth = Math.min(960, maxWidth);
+          if (mediumWidth > compactWidth) {
+            sourceCandidates.push(`${mediumUrl.href} ${mediumWidth}w`);
+          }
+          sourceCandidates.push(`${absoluteUrl.href} ${maxWidth}w`);
+        }
+        img.setAttribute("srcset", sourceCandidates.join(", "));
+        img.setAttribute("sizes", "(max-width: 540px) 100vw, (max-width: 768px) 50vw, 100vw");
       });
       const markup = `<div class="case-flow">${content.innerHTML}</div>`;
       if (!isLocalDev) externalCaseCache.set(key, markup);
@@ -462,95 +500,174 @@
     window.addEventListener("mouseover", setLinkState);
   }
 
-  // Motion guard: honor reduced-motion and skip if GSAP is unavailable.
-  const prefersReduced =
-    window.matchMedia &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (prefersReduced || typeof gsap === "undefined") {
+  // Motion guard: skip enhancements when GSAP is unavailable.
+  if (typeof gsap === "undefined") {
     return;
   }
 
   // Enable scroll-based reveal triggers.
   gsap.registerPlugin(ScrollTrigger);
 
-  // Hero intro sequence.
-  const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-  heroTl
-    .from(".name-line", {
-      yPercent: 40,
-      opacity: 0,
-      duration: 1,
-      stagger: 0.08,
-    })
-    .from(
-      ".nickname",
-      { y: 12, opacity: 0, duration: 0.5 },
-      "-=0.5"
-    )
-    .from(
-      ".tagline",
-      { y: 18, opacity: 0, duration: 0.7 },
-      "-=0.35"
-    )
-    .from(
-      ".rule",
-      { scaleX: 0, transformOrigin: "left center", duration: 0.6 },
-      "-=0.5"
-    );
-
-  // Intent: staggered reveal for each work card on scroll.
-  gsap.utils.toArray(".work-item").forEach((item) => {
-    gsap.from(item, {
-      y: 28,
-      opacity: 0,
-      duration: 0.8,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: item,
-        start: "top 80%",
-        toggleActions: "play none none reverse",
-      },
-    });
-  });
-
-  // Intent: gentle reveal for the about portrait.
-  gsap.from(".about-photo", {
-    y: 40,
-    opacity: 0,
-    duration: 1,
-    ease: "power3.out",
-    scrollTrigger: {
-      trigger: ".about-bleed",
-      start: "top 75%",
-      toggleActions: "play none none reverse",
+  const mm = gsap.matchMedia();
+  mm.add(
+    {
+      reduce: "(prefers-reduced-motion: reduce)",
+      isDesktop: "(min-width: 721px)",
+      isPointerFine: "(pointer: fine)",
     },
-  });
+    (context) => {
+      const { reduce, isDesktop, isPointerFine } = context.conditions;
+      if (reduce) return;
 
-  // Intent: bring in about text after image.
-  gsap.from(".about-layout p", {
-    y: 20,
-    opacity: 0,
-    duration: 0.8,
-    ease: "power3.out",
-    scrollTrigger: {
-      trigger: ".about-layout",
-      start: "top 80%",
-      toggleActions: "play none none reverse",
-    },
-  });
+      // Split hero name into per-letter spans for a GSAP-style character reveal.
+      const heroNameLines = Array.from(document.querySelectorAll(".name-line"));
+      let heroNameChars = Array.from(document.querySelectorAll(".name-char"));
+      if (!heroNameChars.length) {
+        heroNameLines.forEach((line) => {
+          if (!(line instanceof HTMLElement)) return;
+          const raw = line.textContent || "";
+          line.textContent = "";
+          Array.from(raw).forEach((char) => {
+            const letter = document.createElement("span");
+            letter.className = "name-char";
+            if (char === " ") {
+              letter.classList.add("name-char--space");
+              letter.innerHTML = "&nbsp;";
+            } else {
+              letter.textContent = char;
+            }
+            line.appendChild(letter);
+          });
+        });
+        heroNameChars = Array.from(document.querySelectorAll(".name-char"));
+      }
 
-  // Intent: subtle footer heading reveal to close the page.
-  gsap.from(".footer-heading", {
-    y: 16,
-    opacity: 0,
-    duration: 0.6,
-    ease: "power3.out",
-    scrollTrigger: {
-      trigger: ".site-footer",
-      start: "top 85%",
-      toggleActions: "play none none reverse",
-    },
-  });
+      // Hero intro sequence with labels for cleaner choreography.
+      const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      heroTl
+        .addLabel("intro")
+        .from(
+          heroNameChars,
+          {
+            yPercent: 115,
+            opacity: 0,
+            rotate: 2.5,
+            duration: 0.95,
+            stagger: 0.032,
+            ease: "power4.out",
+          },
+          "intro"
+        )
+        .addLabel("copyIn", "-=0.45")
+        .from(".nickname", { y: 12, opacity: 0, duration: 0.5 }, "copyIn")
+        .from(".tagline", { y: 18, opacity: 0, duration: 0.7 }, "copyIn+=0.1")
+        .from(
+          ".rule",
+          { scaleX: 0, transformOrigin: "left center", duration: 0.6 },
+          "copyIn+=0.02"
+        )
+        .addLabel("settle");
+
+      // Keep the hero title subtly "alive" with a gentle breathing loop.
+      const heroName = document.querySelector(".name");
+      if (heroName) {
+        gsap.set(heroName, { transformOrigin: "8% 42%" });
+        gsap.to(heroName, {
+          scale: isDesktop ? 1.015 : 1.008,
+          duration: 3.8,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: 0.25,
+        });
+      }
+
+      let cleanupHeroPointer = null;
+      if (heroName && isDesktop && isPointerFine) {
+        // quickTo keeps pointer-driven motion smooth and inexpensive.
+        const toX = gsap.quickTo(heroName, "x", { duration: 0.8, ease: "power3.out" });
+        const toY = gsap.quickTo(heroName, "y", { duration: 0.8, ease: "power3.out" });
+        const toRotateY = gsap.quickTo(heroName, "rotateY", { duration: 0.9, ease: "power3.out" });
+        const toRotateX = gsap.quickTo(heroName, "rotateX", { duration: 0.9, ease: "power3.out" });
+
+        const handleMove = (event) => {
+          const xNorm = event.clientX / window.innerWidth - 0.5;
+          const yNorm = event.clientY / window.innerHeight - 0.5;
+          toX(xNorm * 10);
+          toY(yNorm * 8);
+          toRotateY(xNorm * 3.2);
+          toRotateX(yNorm * -2.4);
+        };
+
+        const handleLeave = () => {
+          toX(0);
+          toY(0);
+          toRotateY(0);
+          toRotateX(0);
+        };
+
+        window.addEventListener("mousemove", handleMove, { passive: true });
+        window.addEventListener("mouseleave", handleLeave, { passive: true });
+        cleanupHeroPointer = () => {
+          window.removeEventListener("mousemove", handleMove);
+          window.removeEventListener("mouseleave", handleLeave);
+        };
+      }
+
+      // Staggered reveal for each work card on scroll.
+      gsap.utils.toArray(".work-item").forEach((item) => {
+        gsap.from(item, {
+          y: 28,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: item,
+            start: "top 80%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      });
+
+      gsap.from(".about-photo", {
+        y: 40,
+        opacity: 0,
+        duration: 1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".about-bleed",
+          start: "top 75%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      gsap.from(".about-layout p", {
+        y: 20,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".about-layout",
+          start: "top 80%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      gsap.from(".footer-heading", {
+        y: 16,
+        opacity: 0,
+        duration: 0.6,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".site-footer",
+          start: "top 85%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      return () => {
+        if (cleanupHeroPointer) cleanupHeroPointer();
+      };
+    }
+  );
 })();
