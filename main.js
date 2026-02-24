@@ -23,6 +23,7 @@
   const modalPanel = modal ? modal.querySelector(".case-modal-panel") : null;
   const modalBody = modal ? modal.querySelector(".case-modal-body") : null;
   const closeButton = modal ? modal.querySelector(".case-modal-close") : null;
+  const modalBackdrop = modal ? modal.querySelector(".case-modal-backdrop") : null;
   const lightbox = document.querySelector("#lightbox");
   const lightboxImage = lightbox ? lightbox.querySelector("#lightbox-image") : null;
   const lightboxCaption = lightbox ? lightbox.querySelector("#lightbox-caption") : null;
@@ -42,6 +43,9 @@
   };
   // In-memory cache avoids re-fetching case HTML on repeated opens.
   const externalCaseCache = new Map();
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let activeCaseSource = null;
+  let modalTransitionState = "idle";
 
   const isResponsiveRaster = (pathname) =>
     /\.(png|jpe?g)$/i.test(pathname) && !/-640\.(png|jpe?g)$/i.test(pathname);
@@ -193,8 +197,140 @@
     return true;
   };
 
-  const openModal = async (key) => {
+  const canAnimateModalTransition = () =>
+    typeof gsap !== "undefined" &&
+    !prefersReducedMotion &&
+    modal &&
+    modalPanel &&
+    modalBackdrop;
+
+  const createCardGhost = (sourceEl) => {
+    if (!(sourceEl instanceof HTMLElement)) return null;
+    const rect = sourceEl.getBoundingClientRect();
+    const ghost = document.createElement("div");
+    ghost.className = "modal-transition-ghost modal-transition-ghost--card";
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    ghost.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
+    ghost.appendChild(sourceEl.cloneNode(true));
+    document.body.appendChild(ghost);
+    return { ghost, rect };
+  };
+
+  const createPanelGhost = () => {
+    if (!modalPanel) return null;
+    const rect = modalPanel.getBoundingClientRect();
+    const ghost = document.createElement("div");
+    ghost.className = "modal-transition-ghost modal-transition-ghost--panel";
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    ghost.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
+    document.body.appendChild(ghost);
+    return { ghost, rect };
+  };
+
+  const animateModalOpen = (sourceEl) =>
+    new Promise((resolve) => {
+      if (!canAnimateModalTransition()) {
+        resolve();
+        return;
+      }
+      const cardGhostData = createCardGhost(sourceEl);
+      if (!cardGhostData || !modalPanel || !modalBackdrop) {
+        resolve();
+        return;
+      }
+
+      const sourceRect = cardGhostData.rect;
+      const targetRect = modalPanel.getBoundingClientRect();
+      const { ghost } = cardGhostData;
+
+      modal.classList.add("is-transitioning");
+      sourceEl.style.visibility = "hidden";
+      gsap.set(modalBackdrop, { opacity: 0 });
+      gsap.set(modalPanel, { opacity: 0, y: 20, scale: 0.986 });
+
+      gsap
+        .timeline({
+          defaults: { ease: "power3.out" },
+          onComplete: () => {
+            sourceEl.style.visibility = "";
+            ghost.remove();
+            gsap.set(modalPanel, { clearProps: "opacity,transform" });
+            gsap.set(modalBackdrop, { clearProps: "opacity" });
+            modal.classList.remove("is-transitioning");
+            resolve();
+          },
+        })
+        .to(modalBackdrop, { opacity: 1, duration: 0.24 }, 0)
+        .to(
+          ghost,
+          {
+            x: targetRect.left - sourceRect.left,
+            y: targetRect.top - sourceRect.top,
+            width: targetRect.width,
+            height: targetRect.height,
+            borderRadius: 16,
+            duration: 0.5,
+            ease: "power3.inOut",
+          },
+          0
+        )
+        .to(ghost, { opacity: 0, duration: 0.14 }, 0.36)
+        .to(modalPanel, { opacity: 1, y: 0, scale: 1, duration: 0.36 }, 0.16);
+    });
+
+  const animateModalClose = (sourceEl) =>
+    new Promise((resolve) => {
+      if (!canAnimateModalTransition()) {
+        resolve();
+        return;
+      }
+      const panelGhostData = createPanelGhost();
+      if (!panelGhostData || !modalPanel || !modalBackdrop) {
+        resolve();
+        return;
+      }
+
+      const sourceRect = sourceEl.getBoundingClientRect();
+      const panelRect = panelGhostData.rect;
+      const { ghost } = panelGhostData;
+
+      modal.classList.add("is-transitioning");
+      sourceEl.style.visibility = "hidden";
+
+      gsap
+        .timeline({
+          defaults: { ease: "power2.inOut" },
+          onComplete: () => {
+            sourceEl.style.visibility = "";
+            ghost.remove();
+            gsap.set(modalPanel, { clearProps: "opacity,transform" });
+            gsap.set(modalBackdrop, { clearProps: "opacity" });
+            modal.classList.remove("is-transitioning");
+            resolve();
+          },
+        })
+        .to(modalPanel, { opacity: 0, y: 14, scale: 0.988, duration: 0.22 }, 0)
+        .to(modalBackdrop, { opacity: 0, duration: 0.24 }, 0)
+        .to(
+          ghost,
+          {
+            x: sourceRect.left - panelRect.left,
+            y: sourceRect.top - panelRect.top,
+            width: sourceRect.width,
+            height: sourceRect.height,
+            borderRadius: 16,
+            duration: 0.42,
+            ease: "power3.inOut",
+          },
+          0.02
+        );
+    });
+
+  const openModal = async (key, sourceEl = null) => {
     if (!modal || !modalBody) return false;
+    if (modalTransitionState !== "idle") return false;
     modalBody.innerHTML = `
       <div class="case-flow">
         <div class="case-text-wrap">
@@ -205,10 +341,22 @@
     const rendered = await renderCase(key);
     if (!rendered) return false;
     lastFocused = document.activeElement;
+    activeCaseSource = sourceEl instanceof HTMLElement ? sourceEl : null;
     modal.classList.add("is-open");
     modal.removeAttribute("hidden");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
+
+    const canAnimateFromCard =
+      canAnimateModalTransition() &&
+      activeCaseSource instanceof HTMLElement &&
+      activeCaseSource.isConnected;
+    if (canAnimateFromCard) {
+      modalTransitionState = "opening";
+      await animateModalOpen(activeCaseSource);
+      modalTransitionState = "idle";
+    }
+
     if (closeButton) closeButton.focus();
     // Keep URL in sync so deep links and back/forward navigation work.
     if (location.hash !== `#case-${key}`) {
@@ -217,12 +365,28 @@
     return true;
   };
 
-  const closeModal = () => {
+  const closeModal = async () => {
     if (!modal) return;
+    if (modalTransitionState !== "idle") return;
+
+    const sourceEl =
+      activeCaseSource instanceof HTMLElement && activeCaseSource.isConnected
+        ? activeCaseSource
+        : null;
+
+    const canAnimateToCard =
+      canAnimateModalTransition() && sourceEl instanceof HTMLElement && sourceEl.isConnected;
+    if (canAnimateToCard) {
+      modalTransitionState = "closing";
+      await animateModalClose(sourceEl);
+      modalTransitionState = "idle";
+    }
+
     modal.classList.remove("is-open");
     modal.setAttribute("hidden", "");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
+    activeCaseSource = null;
     if (modalPanel) {
       modalPanel.removeAttribute("aria-labelledby");
       modalPanel.setAttribute("aria-label", "Case study");
@@ -427,7 +591,7 @@
       event.preventDefault();
       const key = link.getAttribute("data-case");
       if (!key) return;
-      const opened = await openModal(key);
+      const opened = await openModal(key, link);
       // Direct navigation fallback if modal rendering fails.
       if (!opened && link.href) {
         window.location.href = link.href;
@@ -543,21 +707,53 @@
       }
 
       // Hero intro sequence with labels for cleaner choreography.
+      const heroIntroChars = heroNameChars.filter(
+        (charEl) => !charEl.classList.contains("name-char--space")
+      );
+      const heroAChars = heroIntroChars.filter(
+        (charEl) => (charEl.textContent || "").toUpperCase() === "A"
+      );
+      const letterVariants = [
+        { x: -84, yPercent: 42, rotate: -12, scale: 0.68, duration: 0.62 },
+        { x: 38, yPercent: -30, rotate: 9, scale: 0.83, duration: 0.48 },
+        { x: -20, yPercent: 116, rotate: -5, scale: 0.9, duration: 0.54 },
+        { x: 24, yPercent: 78, rotate: 6, scale: 0.82, duration: 0.58 },
+        { x: -52, yPercent: -22, rotate: -10, scale: 0.78, duration: 0.6 },
+        { x: 18, yPercent: 132, rotate: 3, scale: 0.88, duration: 0.62 },
+        { x: -30, yPercent: 98, rotate: -7, scale: 0.8, duration: 0.56 },
+        { x: 44, yPercent: -14, rotate: 8, scale: 0.85, duration: 0.52 },
+        { x: -16, yPercent: 124, rotate: -3, scale: 0.9, duration: 0.58 },
+        { x: 28, yPercent: 64, rotate: 5, scale: 0.84, duration: 0.5 },
+        { x: -46, yPercent: -8, rotate: -9, scale: 0.79, duration: 0.64 },
+        { x: 12, yPercent: 108, rotate: 4, scale: 0.87, duration: 0.56 },
+        { x: -26, yPercent: 88, rotate: -6, scale: 0.83, duration: 0.54 },
+      ];
+
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      heroTl
-        .addLabel("intro")
-        .from(
-          heroNameChars,
+      heroTl.addLabel("intro");
+      heroIntroChars.forEach((charEl, index) => {
+        const variant = letterVariants[index % letterVariants.length];
+        const charValue = (charEl.textContent || "").toUpperCase();
+        const flipA = charValue === "A" && Math.random() < 0.32;
+        // Force phrase build from first letter to last letter.
+        const startAt = index * 0.08 + (index % 3) * 0.004;
+        heroTl.from(
+          charEl,
           {
-            yPercent: 115,
+            x: variant.x,
+            yPercent: variant.yPercent,
             opacity: 0,
-            rotate: 2.5,
-            duration: 0.95,
-            stagger: 0.032,
-            ease: "power4.out",
+            rotate: variant.rotate,
+            scaleX: flipA ? -variant.scale : variant.scale,
+            scaleY: variant.scale,
+            duration: Math.min(0.62, variant.duration + 0.03),
+            ease: "back.out(1.65)",
           },
-          "intro"
-        )
+          `intro+=${startAt}`
+        );
+      });
+
+      heroTl
         .addLabel("copyIn", "-=0.45")
         .from(".nickname", { y: 12, opacity: 0, duration: 0.5 }, "copyIn")
         .from(".tagline", { y: 18, opacity: 0, duration: 0.7 }, "copyIn+=0.1")
@@ -567,6 +763,38 @@
           "copyIn+=0.02"
         )
         .addLabel("settle");
+
+      let aSpinTween = null;
+      const aSpinCalls = [];
+      const startOccasionalASpin = () => {
+        if (!heroAChars.length) return;
+        const scheduleNext = () => {
+          const call = gsap.delayedCall(gsap.utils.random(3.2, 6.4), () => {
+            const target = heroAChars[Math.floor(Math.random() * heroAChars.length)];
+            if (!(target instanceof HTMLElement)) {
+              scheduleNext();
+              return;
+            }
+            gsap.set(target, { transformPerspective: 700, transformOrigin: "50% 58%" });
+            aSpinTween = gsap.fromTo(
+              target,
+              { rotateY: 0 },
+              {
+                rotateY: 360,
+                duration: 0.72,
+                ease: "power2.inOut",
+                onComplete: () => {
+                  gsap.set(target, { rotateY: 0 });
+                  scheduleNext();
+                },
+              }
+            );
+          });
+          aSpinCalls.push(call);
+        };
+        scheduleNext();
+      };
+      heroTl.call(startOccasionalASpin, null, "settle+=0.25");
 
       // Keep the hero title subtly "alive" with a gentle breathing loop.
       const heroName = document.querySelector(".name");
@@ -611,6 +839,54 @@
         cleanupHeroPointer = () => {
           window.removeEventListener("mousemove", handleMove);
           window.removeEventListener("mouseleave", handleLeave);
+        };
+      }
+
+      let cleanupCardPointer = null;
+      if (isPointerFine) {
+        const links = gsap.utils.toArray(".work-link");
+        const disposers = [];
+
+        links.forEach((link) => {
+          if (!(link instanceof HTMLElement)) return;
+          const media = link.querySelector(".work-media img");
+          gsap.set(link, { transformPerspective: 900, transformOrigin: "center center" });
+
+          const toRotateY = gsap.quickTo(link, "rotateY", { duration: 0.34, ease: "power3.out" });
+          const toRotateX = gsap.quickTo(link, "rotateX", { duration: 0.34, ease: "power3.out" });
+          const toZ = gsap.quickTo(link, "z", { duration: 0.34, ease: "power3.out" });
+
+          const handleMove = (event) => {
+            const rect = link.getBoundingClientRect();
+            const nx = (event.clientX - rect.left) / rect.width - 0.5;
+            const ny = (event.clientY - rect.top) / rect.height - 0.5;
+            toRotateY(nx * 3.4);
+            toRotateX(-ny * 2.8);
+            toZ(14);
+            if (media) {
+              gsap.to(media, { scale: 1.04, duration: 0.45, ease: "power3.out", overwrite: true });
+            }
+          };
+
+          const handleLeave = () => {
+            toRotateY(0);
+            toRotateX(0);
+            toZ(0);
+            if (media) {
+              gsap.to(media, { scale: 1, duration: 0.45, ease: "power3.out", overwrite: true });
+            }
+          };
+
+          link.addEventListener("pointermove", handleMove);
+          link.addEventListener("pointerleave", handleLeave);
+          disposers.push(() => {
+            link.removeEventListener("pointermove", handleMove);
+            link.removeEventListener("pointerleave", handleLeave);
+          });
+        });
+
+        cleanupCardPointer = () => {
+          disposers.forEach((dispose) => dispose());
         };
       }
 
@@ -667,6 +943,9 @@
 
       return () => {
         if (cleanupHeroPointer) cleanupHeroPointer();
+        if (cleanupCardPointer) cleanupCardPointer();
+        if (aSpinTween) aSpinTween.kill();
+        aSpinCalls.forEach((call) => call.kill());
       };
     }
   );
