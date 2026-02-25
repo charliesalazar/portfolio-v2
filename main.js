@@ -29,6 +29,7 @@
   const lightboxCaption = lightbox ? lightbox.querySelector("#lightbox-caption") : null;
   const lightboxClose = lightbox ? lightbox.querySelector(".lightbox-close") : null;
   const lightboxBackdrop = lightbox ? lightbox.querySelector(".lightbox-backdrop") : null;
+  const cursor = document.querySelector(".cursor");
   let lastFocused = null;
   let lastFocusedLightbox = null;
   const lightboxZoom = {
@@ -46,6 +47,8 @@
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let activeCaseSource = null;
   let modalTransitionState = "idle";
+  let activeFadeTargets = [];
+  let syncCursorSuppression = () => {};
 
   const isResponsiveRaster = (pathname) =>
     /\.(png|jpe?g)$/i.test(pathname) && !/-640\.(png|jpe?g)$/i.test(pathname);
@@ -204,128 +207,136 @@
     modalPanel &&
     modalBackdrop;
 
-  const createCardGhost = (sourceEl) => {
-    if (!(sourceEl instanceof HTMLElement)) return null;
-    const rect = sourceEl.getBoundingClientRect();
-    const ghost = document.createElement("div");
-    ghost.className = "modal-transition-ghost modal-transition-ghost--card";
-    ghost.style.width = `${rect.width}px`;
-    ghost.style.height = `${rect.height}px`;
-    ghost.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
-    ghost.appendChild(sourceEl.cloneNode(true));
-    document.body.appendChild(ghost);
-    return { ghost, rect };
-  };
-
-  const createPanelGhost = () => {
-    if (!modalPanel) return null;
-    const rect = modalPanel.getBoundingClientRect();
-    const ghost = document.createElement("div");
-    ghost.className = "modal-transition-ghost modal-transition-ghost--panel";
-    ghost.style.width = `${rect.width}px`;
-    ghost.style.height = `${rect.height}px`;
-    ghost.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
-    document.body.appendChild(ghost);
-    return { ghost, rect };
-  };
-
   const animateModalOpen = (sourceEl) =>
     new Promise((resolve) => {
       if (!canAnimateModalTransition()) {
         resolve();
         return;
       }
-      const cardGhostData = createCardGhost(sourceEl);
-      if (!cardGhostData || !modalPanel || !modalBackdrop) {
-        resolve();
-        return;
-      }
-
-      const sourceRect = cardGhostData.rect;
-      const targetRect = modalPanel.getBoundingClientRect();
-      const { ghost } = cardGhostData;
-
-      modal.classList.add("is-transitioning");
-      sourceEl.style.visibility = "hidden";
-      gsap.set(modalBackdrop, { opacity: 0 });
-      gsap.set(modalPanel, { opacity: 0, y: 20, scale: 0.986 });
-
-      gsap
-        .timeline({
-          defaults: { ease: "power3.out" },
-          onComplete: () => {
-            sourceEl.style.visibility = "";
-            ghost.remove();
-            gsap.set(modalPanel, { clearProps: "opacity,transform" });
-            gsap.set(modalBackdrop, { clearProps: "opacity" });
-            modal.classList.remove("is-transitioning");
-            resolve();
-          },
-        })
-        .to(modalBackdrop, { opacity: 1, duration: 0.24 }, 0)
-        .to(
-          ghost,
-          {
-            x: targetRect.left - sourceRect.left,
-            y: targetRect.top - sourceRect.top,
-            width: targetRect.width,
-            height: targetRect.height,
-            borderRadius: 16,
-            duration: 0.5,
-            ease: "power3.inOut",
-          },
-          0
-        )
-        .to(ghost, { opacity: 0, duration: 0.14 }, 0.36)
-        .to(modalPanel, { opacity: 1, y: 0, scale: 1, duration: 0.36 }, 0.16);
-    });
-
-  const animateModalClose = (sourceEl) =>
-    new Promise((resolve) => {
-      if (!canAnimateModalTransition()) {
-        resolve();
-        return;
-      }
-      const panelGhostData = createPanelGhost();
-      if (!panelGhostData || !modalPanel || !modalBackdrop) {
+      if (!(sourceEl instanceof HTMLElement) || !modalPanel || !modalBackdrop) {
         resolve();
         return;
       }
 
       const sourceRect = sourceEl.getBoundingClientRect();
-      const panelRect = panelGhostData.rect;
-      const { ghost } = panelGhostData;
+      if (modalPanel) modalPanel.scrollTop = 0;
+      if (modalBody) modalBody.scrollTop = 0;
+      const targetRect = modalPanel.getBoundingClientRect();
+      const fromScaleX = Math.max(0.15, sourceRect.width / Math.max(1, targetRect.width));
+      const fromScaleY = Math.max(0.15, sourceRect.height / Math.max(1, targetRect.height));
+      const fromX = sourceRect.left - targetRect.left;
+      const fromY = sourceRect.top - targetRect.top;
+      const fadeTargets = Array.from(
+        document.querySelectorAll(".site-header, main > section, .site-footer")
+      ).filter((el) => el instanceof HTMLElement && !el.contains(sourceEl));
+      activeFadeTargets = fadeTargets;
 
       modal.classList.add("is-transitioning");
-      sourceEl.style.visibility = "hidden";
+      sourceEl.classList.add("is-transition-source");
+      gsap.set(modalBackdrop, { opacity: 0 });
+      gsap.set(modalPanel, {
+        opacity: 0,
+        x: fromX,
+        y: fromY,
+        scaleX: fromScaleX,
+        scaleY: fromScaleY,
+        transformOrigin: "top left",
+        borderRadius: getComputedStyle(sourceEl).borderRadius || "24px",
+        filter: "blur(8px)",
+      });
 
       gsap
         .timeline({
-          defaults: { ease: "power2.inOut" },
+          defaults: { ease: "power3.out" },
           onComplete: () => {
-            sourceEl.style.visibility = "";
-            ghost.remove();
-            gsap.set(modalPanel, { clearProps: "opacity,transform" });
+            sourceEl.classList.remove("is-transition-source");
+            gsap.set(modalPanel, {
+              clearProps: "opacity,transform,filter,borderRadius,x,y,scaleX,scaleY,transformOrigin",
+            });
             gsap.set(modalBackdrop, { clearProps: "opacity" });
             modal.classList.remove("is-transitioning");
             resolve();
           },
         })
-        .to(modalPanel, { opacity: 0, y: 14, scale: 0.988, duration: 0.22 }, 0)
-        .to(modalBackdrop, { opacity: 0, duration: 0.24 }, 0)
+        .to(fadeTargets, { opacity: 0.2, duration: 0.28, ease: "power2.out", stagger: 0.015 }, 0)
+        .to(modalBackdrop, { opacity: 1, duration: 0.3 }, 0)
         .to(
-          ghost,
+          modalPanel,
           {
-            x: sourceRect.left - panelRect.left,
-            y: sourceRect.top - panelRect.top,
-            width: sourceRect.width,
-            height: sourceRect.height,
-            borderRadius: 16,
-            duration: 0.42,
-            ease: "power3.inOut",
+            opacity: 1,
+            x: 0,
+            y: 0,
+            scaleX: 1,
+            scaleY: 1,
+            borderRadius: 0,
+            filter: "blur(0px)",
+            duration: 0.46,
+            ease: "power4.out",
           },
-          0.02
+          0.08
         );
+    });
+
+  const animateModalClose = () =>
+    new Promise((resolve) => {
+      if (!canAnimateModalTransition()) {
+        resolve();
+        return;
+      }
+      if (!modalPanel || !modalBackdrop) {
+        resolve();
+        return;
+      }
+
+      const fadeTargets = activeFadeTargets;
+      const canAnimateToCard = activeCaseSource instanceof HTMLElement && activeCaseSource.isConnected;
+      const panelRect = modalPanel.getBoundingClientRect();
+      const sourceRect = canAnimateToCard ? activeCaseSource.getBoundingClientRect() : null;
+
+      modal.classList.add("is-transitioning");
+
+      const timeline = gsap.timeline({
+        defaults: { ease: "power2.inOut" },
+        onComplete: () => {
+          gsap.set(modalPanel, {
+            clearProps: "opacity,transform,filter,borderRadius,x,y,scaleX,scaleY,transformOrigin",
+          });
+          gsap.set(modalBackdrop, { clearProps: "opacity" });
+          gsap.set(fadeTargets, { clearProps: "opacity" });
+          activeFadeTargets = [];
+          modal.classList.remove("is-transitioning");
+          resolve();
+        },
+      });
+
+      if (canAnimateToCard && sourceRect) {
+        const toScaleX = Math.max(0.15, sourceRect.width / Math.max(1, panelRect.width));
+        const toScaleY = Math.max(0.15, sourceRect.height / Math.max(1, panelRect.height));
+        const toX = sourceRect.left - panelRect.left;
+        const toY = sourceRect.top - panelRect.top;
+        timeline.to(
+          modalPanel,
+          {
+            opacity: 0.22,
+            x: toX,
+            y: toY,
+            scaleX: toScaleX,
+            scaleY: toScaleY,
+            borderRadius: getComputedStyle(activeCaseSource).borderRadius || "24px",
+            transformOrigin: "top left",
+            filter: "blur(8px)",
+            duration: 0.34,
+            ease: "power3.in",
+          },
+          0
+        );
+      } else {
+        timeline.to(modalPanel, { opacity: 0, y: 10, filter: "blur(8px)", duration: 0.24 }, 0);
+      }
+
+      timeline
+        .to(modalBackdrop, { opacity: 0, duration: 0.24 }, 0)
+        .to(fadeTargets, { opacity: 1, duration: 0.24, ease: "power2.out", stagger: 0.012 }, 0.02);
     });
 
   const openModal = async (key, sourceEl = null) => {
@@ -346,6 +357,7 @@
     modal.removeAttribute("hidden");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
+    syncCursorSuppression();
 
     const canAnimateFromCard =
       canAnimateModalTransition() &&
@@ -369,16 +381,10 @@
     if (!modal) return;
     if (modalTransitionState !== "idle") return;
 
-    const sourceEl =
-      activeCaseSource instanceof HTMLElement && activeCaseSource.isConnected
-        ? activeCaseSource
-        : null;
-
-    const canAnimateToCard =
-      canAnimateModalTransition() && sourceEl instanceof HTMLElement && sourceEl.isConnected;
-    if (canAnimateToCard) {
+    const canAnimateClose = canAnimateModalTransition();
+    if (canAnimateClose) {
       modalTransitionState = "closing";
-      await animateModalClose(sourceEl);
+      await animateModalClose();
       modalTransitionState = "idle";
     }
 
@@ -386,6 +392,11 @@
     modal.setAttribute("hidden", "");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
+    syncCursorSuppression();
+    if (activeFadeTargets.length) {
+      gsap.set(activeFadeTargets, { clearProps: "opacity" });
+      activeFadeTargets = [];
+    }
     activeCaseSource = null;
     if (modalPanel) {
       modalPanel.removeAttribute("aria-labelledby");
@@ -446,7 +457,16 @@
     lightbox.classList.add("is-open");
     lightbox.removeAttribute("hidden");
     lightbox.setAttribute("aria-hidden", "false");
+    syncCursorSuppression();
     resetLightboxTransform();
+    if (typeof gsap !== "undefined" && !prefersReducedMotion) {
+      gsap.set(lightboxBackdrop, { opacity: 0 });
+      gsap.set(lightboxImage, { opacity: 0, y: 12, filter: "blur(10px)" });
+      gsap
+        .timeline({ defaults: { ease: "power2.out" } })
+        .to(lightboxBackdrop, { opacity: 1, duration: 0.2 }, 0)
+        .to(lightboxImage, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.28 }, 0.06);
+    }
     if (lightboxClose) lightboxClose.focus();
   };
 
@@ -455,10 +475,14 @@
     lightbox.classList.remove("is-open");
     lightbox.setAttribute("hidden", "");
     lightbox.setAttribute("aria-hidden", "true");
+    syncCursorSuppression();
     if (lightboxImage) {
       lightboxImage.src = "";
       lightboxImage.alt = "";
       lightboxImage.classList.remove("is-dragging");
+      lightboxImage.style.removeProperty("filter");
+      lightboxImage.style.removeProperty("opacity");
+      lightboxImage.style.removeProperty("transform");
     }
     if (lightboxCaption) {
       lightboxCaption.textContent = "";
@@ -630,24 +654,42 @@
 
   openFromHash();
 
-  const cursor = document.querySelector(".cursor");
   if (cursor) {
     // Custom cursor is enhancement-only and only active on pointer-capable devices.
     const cursorOffsetX = 12;
     const cursorOffsetY = -12;
     const highIntentSelector =
       ".work-link, .case-modal-close, .lightbox-close, .footer-links a, .site-footer a";
+    const isCursorSuppressed = () =>
+      document.body.classList.contains("cursor-suppressed");
+    const hideCursor = () => {
+      cursor.classList.remove("is-active", "is-link", "is-cta");
+    };
+
+    syncCursorSuppression = () => {
+      const shouldSuppress =
+        modalTransitionState !== "idle" ||
+        (modal && modal.classList.contains("is-open")) ||
+        (lightbox && lightbox.classList.contains("is-open"));
+      document.body.classList.toggle("cursor-suppressed", Boolean(shouldSuppress));
+      if (shouldSuppress) hideCursor();
+    };
+    syncCursorSuppression();
 
     const moveCursor = (event) => {
+      if (isCursorSuppressed()) return;
       const { clientX, clientY } = event;
       cursor.style.left = `${clientX + cursorOffsetX}px`;
       cursor.style.top = `${clientY + cursorOffsetY}px`;
     };
 
-    const showCursor = () => cursor.classList.add("is-active");
-    const hideCursor = () => cursor.classList.remove("is-active");
+    const showCursor = () => {
+      if (isCursorSuppressed()) return;
+      cursor.classList.add("is-active");
+    };
 
     const setLinkState = (event) => {
+      if (isCursorSuppressed()) return;
       if (!(event.target instanceof Element)) return;
       const target = event.target.closest(
         "a, button, [role=\"button\"], input, textarea, select"
@@ -711,19 +753,11 @@
         (charEl) => !charEl.classList.contains("name-char--space")
       );
       const letterVariants = [
-        { x: -84, yPercent: 42, rotation: -12, scale: 0.68, duration: 0.62 },
-        { x: 38, yPercent: -30, rotation: 9, scale: 0.83, duration: 0.48 },
-        { x: -20, yPercent: 116, rotation: -5, scale: 0.9, duration: 0.54 },
-        { x: 24, yPercent: 78, rotation: 6, scale: 0.82, duration: 0.58 },
-        { x: -52, yPercent: -22, rotation: -10, scale: 0.78, duration: 0.6 },
-        { x: 18, yPercent: 132, rotation: 3, scale: 0.88, duration: 0.62 },
-        { x: -30, yPercent: 98, rotation: -7, scale: 0.8, duration: 0.56 },
-        { x: 44, yPercent: -14, rotation: 8, scale: 0.85, duration: 0.52 },
-        { x: -16, yPercent: 124, rotation: -3, scale: 0.9, duration: 0.58 },
-        { x: 28, yPercent: 64, rotation: 5, scale: 0.84, duration: 0.5 },
-        { x: -46, yPercent: -8, rotation: -9, scale: 0.79, duration: 0.64 },
-        { x: 12, yPercent: 108, rotation: 4, scale: 0.87, duration: 0.56 },
-        { x: -26, yPercent: 88, rotation: -6, scale: 0.83, duration: 0.54 },
+        { x: -40, duration: 0.72 },
+        { x: -34, duration: 0.7 },
+        { x: -36, duration: 0.74 },
+        { x: -30, duration: 0.68 },
+        { x: -38, duration: 0.73 },
       ];
 
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
@@ -732,52 +766,24 @@
         heroIntroChars,
         {
           opacity: 0,
-          scale: 0,
           x: 0,
           yPercent: 0,
-          rotation: 0,
+          filter: "blur(8px)",
         },
         "intro"
       );
       heroIntroChars.forEach((charEl, index) => {
         const variant = letterVariants[index % letterVariants.length];
         // Force phrase build from first letter to last letter.
-        const startAt = index * 0.08 + (index % 3) * 0.004;
-        const useKeyframes = index % 3 === 0 || index === heroIntroChars.length - 1;
-        const toVars = useKeyframes
-          ? {
-              keyframes: [
-                {
-                  x: variant.x * 0.24,
-                  yPercent: variant.yPercent * 0.16,
-                  rotation: variant.rotation * 0.42,
-                  scale: 1.06,
-                  opacity: 1,
-                  duration: 0.2,
-                  ease: "power2.out",
-                },
-                {
-                  x: 0,
-                  yPercent: 0,
-                  rotation: 0,
-                  scale: 1,
-                  opacity: 1,
-                  duration: Math.min(0.5, variant.duration + 0.02),
-                  ease: "back.out(1.65)",
-                },
-              ],
-              immediateRender: false,
-            }
-          : {
-              x: 0,
-              yPercent: 0,
-              rotation: 0,
-              scale: 1,
-              opacity: 1,
-              duration: Math.min(0.62, variant.duration + 0.03),
-              ease: "back.out(1.65)",
-              immediateRender: false,
-            };
+        const startAt = index * 0.082;
+        const toVars = {
+          x: 0,
+          opacity: 1,
+          duration: variant.duration,
+          filter: "blur(0px)",
+          ease: "power2.out",
+          immediateRender: false,
+        };
 
         heroTl.fromTo(
           charEl,
@@ -785,8 +791,7 @@
             x: variant.x,
             yPercent: variant.yPercent,
             opacity: 0,
-            rotation: variant.rotation,
-            scale: variant.scale,
+            filter: "blur(8px)",
           },
           toVars,
           `intro+=${startAt}`
@@ -795,19 +800,89 @@
 
       heroTl
         .addLabel("copyIn", "-=0.45")
-        .from(".tagline", { y: 18, opacity: 0, duration: 0.7 }, "copyIn+=0.1")
         .from(
           ".rule",
-          { scaleX: 0, transformOrigin: "left center", duration: 0.6 },
-          "copyIn+=0.02"
+          { scaleX: 0, opacity: 0, filter: "blur(6px)", transformOrigin: "left center", duration: 0.6 },
+          "copyIn+=0.24"
         )
         .addLabel("settle");
 
+      const slightlyWord = document.querySelector(".tagline-word--slightly");
+      if (slightlyWord instanceof HTMLElement && !slightlyWord.querySelector(".tagline-char")) {
+        const letters = Array.from((slightlyWord.textContent || "").trim());
+        slightlyWord.textContent = "";
+        letters.forEach((char) => {
+          const span = document.createElement("span");
+          span.className = "tagline-char";
+          span.textContent = char;
+          slightlyWord.appendChild(span);
+        });
+      }
+
+      const taglineWords = gsap.utils.toArray(
+        ".tagline-word:not(.tagline-word--slightly):not(.tagline-word--shorter)"
+      );
+      const slightlyChars = gsap.utils.toArray(".tagline-word--slightly .tagline-char");
+      const shorterWord = document.querySelector(".tagline-word--shorter");
+
+      if (taglineWords.length || slightlyChars.length) {
+        heroTl.fromTo(
+          taglineWords,
+          { y: 12, opacity: 0, filter: "blur(8px)" },
+          {
+            y: 0,
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: 0.5,
+            stagger: 0.1,
+            ease: "power2.out",
+          },
+          "copyIn+=0.1"
+        );
+
+        if (slightlyChars.length) {
+          heroTl.fromTo(
+            slightlyChars,
+            { y: 8, opacity: 0, filter: "blur(8px)" },
+            {
+              y: 0,
+              opacity: 1,
+              filter: "blur(0px)",
+              duration: 0.32,
+              stagger: 0.12,
+              ease: "power2.out",
+            },
+            "copyIn+=1.55"
+          );
+        }
+
+        if (shorterWord instanceof HTMLElement) {
+          heroTl.fromTo(
+            shorterWord,
+            { y: 8, opacity: 0, filter: "blur(8px)" },
+            {
+              y: 0,
+              opacity: 1,
+              filter: "blur(0px)",
+              duration: 0.36,
+              ease: "power2.out",
+            },
+            "copyIn+=2.65"
+          );
+        }
+      } else {
+        heroTl.from(
+          ".tagline",
+          { y: 18, opacity: 0, filter: "blur(8px)", duration: 0.7 },
+          "copyIn+=0.1"
+        );
+      }
+
       // Keep the hero title subtly "alive" with a gentle breathing loop.
-      const heroName = document.querySelector(".name");
-      if (heroName) {
-        gsap.set(heroName, { transformOrigin: "8% 42%" });
-        gsap.to(heroName, {
+      const heroBreathingTargets = gsap.utils.toArray(".name-line");
+      if (heroBreathingTargets.length) {
+        gsap.set(heroBreathingTargets, { transformOrigin: "8% 42%" });
+        gsap.to(heroBreathingTargets, {
           scale: isDesktop ? 1.015 : 1.008,
           duration: 3.8,
           ease: "sine.inOut",
@@ -872,6 +947,7 @@
         gsap.from(item, {
           y: 28,
           opacity: 0,
+          filter: "blur(10px)",
           duration: 0.8,
           ease: "power3.out",
           scrollTrigger: {
@@ -885,6 +961,7 @@
       gsap.from(".about-photo", {
         y: 40,
         opacity: 0,
+        filter: "blur(10px)",
         duration: 1,
         ease: "power3.out",
         scrollTrigger: {
@@ -897,6 +974,7 @@
       gsap.from(".about-layout p", {
         y: 20,
         opacity: 0,
+        filter: "blur(8px)",
         duration: 0.8,
         ease: "power3.out",
         scrollTrigger: {
@@ -909,6 +987,7 @@
       gsap.from(".footer-heading", {
         y: 16,
         opacity: 0,
+        filter: "blur(8px)",
         duration: 0.6,
         ease: "power3.out",
         scrollTrigger: {

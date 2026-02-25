@@ -80,6 +80,10 @@ body {
     cursor: none;
   }
 
+  body.cursor-suppressed {
+    cursor: auto;
+  }
+
   .cursor {
     position: fixed;
     top: 0;
@@ -118,6 +122,11 @@ body {
 
   .cursor.is-active {
     opacity: 1;
+  }
+
+  body.cursor-suppressed .cursor {
+    opacity: 0 !important;
+    transform: translate(-50%, -50%) scale(0.9) !important;
   }
 
   .cursor.is-link {
@@ -180,6 +189,7 @@ a:focus-visible {
 .site-header .container {
   position: relative;
   z-index: 2;
+  width: 100%;
 }
 
 .rule {
@@ -228,6 +238,16 @@ a:focus-visible {
   color: var(--c-muted);
   font-size: 1.25rem;
   line-height: 1.65;
+}
+
+.tagline-word {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+}
+
+.tagline-char {
+  display: inline-block;
+  will-change: transform, opacity, filter;
 }
 
 /* Selected work */
