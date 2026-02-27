@@ -226,13 +226,27 @@
       const fromScaleY = Math.max(0.15, sourceRect.height / Math.max(1, targetRect.height));
       const fromX = sourceRect.left - targetRect.left;
       const fromY = sourceRect.top - targetRect.top;
-      const fadeTargets = Array.from(
-        document.querySelectorAll(".site-header, main > section, .site-footer")
-      ).filter((el) => el instanceof HTMLElement && !el.contains(sourceEl));
-      activeFadeTargets = fadeTargets;
+      const sourceCard = sourceEl.closest(".work-item");
+      const siblingCards = Array.from(document.querySelectorAll(".work-item")).filter(
+        (item) => item instanceof HTMLElement && item !== sourceCard
+      );
+      const sourceCopy = sourceEl.querySelector(".work-copy");
+      const sourceMedia = sourceEl.querySelector(".work-media");
+      const sourceParts = [sourceCopy, sourceMedia].filter((el) => el instanceof HTMLElement);
+      const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
+      const siblingFadeDuration = 0.22;
+      const shellExpandStart = siblingFadeDuration + (isMobileViewport ? 0.12 : 0.14);
+      const sourceExitDuration = isMobileViewport ? 0.1 : 0.12;
+      const sourceExitLeadIn = isMobileViewport ? 0.03 : 0.04;
+      const sourceSequenceOffset = isMobileViewport ? 0.05 : 0.06;
+      const sourceExitStart = Math.max(0, shellExpandStart - sourceExitDuration - sourceExitLeadIn);
+      const sourceMediaExitStart =
+        sourceCopy instanceof HTMLElement
+          ? sourceExitStart + sourceSequenceOffset
+          : sourceExitStart;
+      activeFadeTargets = siblingCards;
 
       modal.classList.add("is-transitioning");
-      sourceEl.classList.add("is-transition-source");
       gsap.set(modalBackdrop, { opacity: 0 });
       gsap.set(modalPanel, {
         opacity: 0,
@@ -242,39 +256,94 @@
         scaleY: fromScaleY,
         transformOrigin: "top left",
         borderRadius: getComputedStyle(sourceEl).borderRadius || "24px",
-        filter: "blur(8px)",
+        overflow: "hidden",
+      });
+      if (modalBody) gsap.set(modalBody, { opacity: 0, filter: "blur(10px)" });
+      if (closeButton) gsap.set(closeButton, { opacity: 0, filter: "blur(10px)" });
+
+      const timeline = gsap.timeline({
+        defaults: { ease: "power3.out" },
+        onComplete: () => {
+          sourceEl.classList.remove("is-transition-source");
+          gsap.set(modalPanel, {
+            clearProps: "opacity,transform,borderRadius,x,y,scaleX,scaleY,transformOrigin,overflow",
+          });
+          gsap.set(modalBackdrop, { clearProps: "opacity" });
+          if (modalBody) gsap.set(modalBody, { clearProps: "opacity,filter" });
+          if (closeButton) gsap.set(closeButton, { clearProps: "opacity,filter" });
+          gsap.set(sourceParts, { clearProps: "opacity,filter" });
+          modal.classList.remove("is-transitioning");
+          resolve();
+        },
       });
 
-      gsap
-        .timeline({
-          defaults: { ease: "power3.out" },
-          onComplete: () => {
-            sourceEl.classList.remove("is-transition-source");
-            gsap.set(modalPanel, {
-              clearProps: "opacity,transform,filter,borderRadius,x,y,scaleX,scaleY,transformOrigin",
-            });
-            gsap.set(modalBackdrop, { clearProps: "opacity" });
-            modal.classList.remove("is-transitioning");
-            resolve();
+      timeline
+        // 2) Other cards blur out.
+        .to(
+          siblingCards,
+          { opacity: 0.2, filter: "blur(8px)", duration: siblingFadeDuration, ease: "power2.out", stagger: 0.012 },
+          0
+        );
+      // 3) The source card content exits in sequence (copy first, then image).
+      if (sourceCopy instanceof HTMLElement) {
+        timeline.to(
+          sourceCopy,
+          {
+            opacity: 0,
+            filter: "blur(10px)",
+            duration: sourceExitDuration,
+            ease: "power2.out",
           },
-        })
-        .to(fadeTargets, { opacity: 0.2, duration: 0.28, ease: "power2.out", stagger: 0.015 }, 0)
-        .to(modalBackdrop, { opacity: 1, duration: 0.3 }, 0)
+          sourceExitStart
+        );
+      }
+      if (sourceMedia instanceof HTMLElement) {
+        timeline.to(
+          sourceMedia,
+          {
+            opacity: 0,
+            filter: "blur(10px)",
+            duration: sourceExitDuration,
+            ease: "power2.out",
+          },
+          sourceMediaExitStart
+        );
+      }
+      timeline
+        .set(modalPanel, { opacity: 1 }, shellExpandStart)
+        .add(() => sourceEl.classList.add("is-transition-source"), shellExpandStart + 0.01)
+        // 4) Expand the card into modal shell.
+        .to(modalBackdrop, { opacity: 1, duration: 0.22 }, shellExpandStart)
         .to(
           modalPanel,
           {
-            opacity: 1,
             x: 0,
             y: 0,
             scaleX: 1,
             scaleY: 1,
             borderRadius: 0,
-            filter: "blur(0px)",
             duration: 0.46,
-            ease: "power4.out",
+            ease: "power3.inOut",
           },
-          0.08
+          shellExpandStart
         );
+      // 5) Modal content blurs in after expansion.
+      if (modalBody) {
+        timeline.to(modalBody, {
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.26,
+          ease: "power2.out",
+        }, shellExpandStart + 0.46);
+      }
+      if (closeButton) {
+        timeline.to(closeButton, {
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.22,
+          ease: "power2.out",
+        }, shellExpandStart + 0.46);
+      }
     });
 
   const animateModalClose = () =>
@@ -290,53 +359,112 @@
 
       const fadeTargets = activeFadeTargets;
       const canAnimateToCard = activeCaseSource instanceof HTMLElement && activeCaseSource.isConnected;
-      const panelRect = modalPanel.getBoundingClientRect();
       const sourceRect = canAnimateToCard ? activeCaseSource.getBoundingClientRect() : null;
+      const sourceCopy =
+        canAnimateToCard && activeCaseSource ? activeCaseSource.querySelector(".work-copy") : null;
+      const sourceMedia =
+        canAnimateToCard && activeCaseSource ? activeCaseSource.querySelector(".work-media") : null;
+      const sourceParts = [sourceCopy, sourceMedia].filter((el) => el instanceof HTMLElement);
 
       modal.classList.add("is-transitioning");
+      if (canAnimateToCard && activeCaseSource) {
+        activeCaseSource.classList.add("is-transition-source");
+      }
 
       const timeline = gsap.timeline({
         defaults: { ease: "power2.inOut" },
         onComplete: () => {
           gsap.set(modalPanel, {
-            clearProps: "opacity,transform,filter,borderRadius,x,y,scaleX,scaleY,transformOrigin",
+            clearProps: "opacity,transform,borderRadius,x,y,scaleX,scaleY,transformOrigin",
           });
+          if (modalBody) gsap.set(modalBody, { clearProps: "opacity,filter" });
+          if (closeButton) gsap.set(closeButton, { clearProps: "opacity,filter" });
           gsap.set(modalBackdrop, { clearProps: "opacity" });
-          gsap.set(fadeTargets, { clearProps: "opacity" });
-          activeFadeTargets = [];
+          gsap.set(fadeTargets, { clearProps: "opacity,filter" });
+          gsap.set(sourceParts, { clearProps: "opacity,filter,y,scale" });
+          if (activeCaseSource instanceof HTMLElement) {
+            activeCaseSource.classList.remove("is-transition-source");
+          }
           modal.classList.remove("is-transitioning");
           resolve();
         },
       });
 
       if (canAnimateToCard && sourceRect) {
-        const toScaleX = Math.max(0.15, sourceRect.width / Math.max(1, panelRect.width));
-        const toScaleY = Math.max(0.15, sourceRect.height / Math.max(1, panelRect.height));
-        const toX = sourceRect.left - panelRect.left;
-        const toY = sourceRect.top - panelRect.top;
-        timeline.to(
-          modalPanel,
-          {
-            opacity: 0.22,
-            x: toX,
-            y: toY,
-            scaleX: toScaleX,
-            scaleY: toScaleY,
-            borderRadius: getComputedStyle(activeCaseSource).borderRadius || "24px",
-            transformOrigin: "top left",
-            filter: "blur(8px)",
-            duration: 0.34,
-            ease: "power3.in",
-          },
-          0
-        );
-      } else {
-        timeline.to(modalPanel, { opacity: 0, y: 10, filter: "blur(8px)", duration: 0.24 }, 0);
-      }
+        const sourceCardShowTime = 0.12;
+        const sourceCopyRevealStart = sourceCardShowTime + 0.05;
+        const sourceMediaRevealStart = sourceCopyRevealStart + 0.1;
 
-      timeline
-        .to(modalBackdrop, { opacity: 0, duration: 0.24 }, 0)
-        .to(fadeTargets, { opacity: 1, duration: 0.24, ease: "power2.out", stagger: 0.012 }, 0.02);
+        // 2) Hide modal content quickly to avoid squished close artifacts.
+        if (modalBody) {
+          timeline.to(
+            modalBody,
+            {
+              opacity: 0,
+              filter: "blur(10px)",
+              duration: 0.08,
+              ease: "power2.out",
+            },
+            0
+          );
+        }
+        if (closeButton) {
+          timeline.to(
+            closeButton,
+            {
+              opacity: 0,
+              filter: "blur(10px)",
+              duration: 0.06,
+              ease: "power2.out",
+            },
+            0
+          );
+        }
+        timeline.to(modalPanel, { opacity: 0, duration: 0.08, ease: "power1.out" }, 0.02);
+        timeline.to(modalBackdrop, { opacity: 0, duration: 0.2, ease: "power1.out" }, 0.02);
+
+        // 3) Destination card reappears as empty shell, then text, then image.
+        if (activeCaseSource && sourceParts.length) {
+          timeline.add(() => {
+            activeCaseSource.classList.remove("is-transition-source");
+            if (sourceCopy instanceof HTMLElement) {
+              gsap.set(sourceCopy, { opacity: 0, filter: "blur(10px)", y: 10 });
+            }
+            if (sourceMedia instanceof HTMLElement) {
+              gsap.set(sourceMedia, { opacity: 0, filter: "blur(10px)", scale: 0.985 });
+            }
+          }, sourceCardShowTime);
+        }
+        if (activeCaseSource && sourceCopy instanceof HTMLElement) {
+          timeline.to(
+            sourceCopy,
+            {
+              opacity: 1,
+              filter: "blur(0px)",
+              y: 0,
+              duration: 0.2,
+              ease: "power2.out",
+            },
+            sourceCopyRevealStart
+          );
+        }
+        if (activeCaseSource && sourceMedia instanceof HTMLElement) {
+          timeline.to(
+            sourceMedia,
+            {
+              opacity: 1,
+              filter: "blur(0px)",
+              scale: 1,
+              duration: 0.22,
+              ease: "power2.out",
+            },
+            sourceMediaRevealStart
+          );
+        }
+      } else {
+        timeline.to(modalPanel, { opacity: 0, y: 10, duration: 0.22 }, 0);
+        timeline.to(modalBackdrop, { opacity: 0, duration: 0.24 }, 0);
+      }
     });
 
   const openModal = async (key, sourceEl = null) => {
@@ -394,7 +522,7 @@
     document.body.classList.remove("modal-open");
     syncCursorSuppression();
     if (activeFadeTargets.length) {
-      gsap.set(activeFadeTargets, { clearProps: "opacity" });
+      gsap.set(activeFadeTargets, { clearProps: "opacity,filter" });
       activeFadeTargets = [];
     }
     activeCaseSource = null;
@@ -803,44 +931,61 @@
         .from(
           ".rule",
           { scaleX: 0, opacity: 0, filter: "blur(6px)", transformOrigin: "left center", duration: 0.6 },
-          "copyIn+=0.24"
+          "copyIn+=0.2"
         )
         .addLabel("settle");
 
-      const slightlyWord = document.querySelector(".tagline-word--slightly");
-      if (slightlyWord instanceof HTMLElement && !slightlyWord.querySelector(".tagline-char")) {
-        const letters = Array.from((slightlyWord.textContent || "").trim());
-        slightlyWord.textContent = "";
-        letters.forEach((char) => {
-          const span = document.createElement("span");
-          span.className = "tagline-char";
-          span.textContent = char;
-          slightlyWord.appendChild(span);
-        });
-      }
+      const tagline = document.querySelector(".tagline");
+      if (tagline instanceof HTMLElement) {
+        if (!tagline.dataset.wordsReady) {
+          const raw = (tagline.textContent || "").trim().replace(/\s+/g, " ");
+          const words = raw.split(" ").filter(Boolean);
+          tagline.textContent = "";
+          words.forEach((word, index) => {
+            const span = document.createElement("span");
+            span.className = "tagline-word";
+            const normalized = word.toLowerCase().replace(/[^\w]/g, "");
+            if (normalized === "slightly") span.classList.add("tagline-word--slightly");
+            if (normalized === "shorter") span.classList.add("tagline-word--shorter");
+            span.textContent = word;
+            tagline.appendChild(span);
+            if (index < words.length - 1) tagline.appendChild(document.createTextNode(" "));
+          });
+          tagline.dataset.wordsReady = "true";
+        }
 
-      const taglineWords = gsap.utils.toArray(
-        ".tagline-word:not(.tagline-word--slightly):not(.tagline-word--shorter)"
-      );
-      const slightlyChars = gsap.utils.toArray(".tagline-word--slightly .tagline-char");
-      const shorterWord = document.querySelector(".tagline-word--shorter");
+        const normalTaglineWords = gsap.utils.toArray(
+          ".tagline .tagline-word:not(.tagline-word--slightly):not(.tagline-word--shorter)"
+        );
+        const slightlyWord = tagline.querySelector(".tagline-word--slightly");
+        const shorterWord = tagline.querySelector(".tagline-word--shorter");
 
-      if (taglineWords.length || slightlyChars.length) {
         heroTl.fromTo(
-          taglineWords,
+          normalTaglineWords,
           { y: 12, opacity: 0, filter: "blur(8px)" },
           {
             y: 0,
             opacity: 1,
             filter: "blur(0px)",
-            duration: 0.5,
-            stagger: 0.1,
+            duration: 0.42,
+            stagger: 0.085,
             ease: "power2.out",
           },
-          "copyIn+=0.1"
+          "copyIn+=0.08"
         );
 
-        if (slightlyChars.length) {
+        if (slightlyWord instanceof HTMLElement) {
+          if (!slightlyWord.querySelector(".tagline-char")) {
+            const raw = (slightlyWord.textContent || "").trim();
+            slightlyWord.textContent = "";
+            Array.from(raw).forEach((char) => {
+              const span = document.createElement("span");
+              span.className = "tagline-char";
+              span.textContent = char;
+              slightlyWord.appendChild(span);
+            });
+          }
+          const slightlyChars = gsap.utils.toArray(".tagline-word--slightly .tagline-char");
           heroTl.fromTo(
             slightlyChars,
             { y: 8, opacity: 0, filter: "blur(8px)" },
@@ -848,11 +993,11 @@
               y: 0,
               opacity: 1,
               filter: "blur(0px)",
-              duration: 0.32,
-              stagger: 0.12,
+              duration: 0.24,
+              stagger: 0.095,
               ease: "power2.out",
             },
-            "copyIn+=1.55"
+            ">+0.06"
           );
         }
 
@@ -867,7 +1012,7 @@
               duration: 0.36,
               ease: "power2.out",
             },
-            "copyIn+=2.65"
+            ">+0.12"
           );
         }
       } else {
@@ -984,18 +1129,23 @@
         },
       });
 
-      gsap.from(".footer-heading", {
-        y: 16,
-        opacity: 0,
-        filter: "blur(8px)",
-        duration: 0.6,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: ".site-footer",
-          start: "top 85%",
-          toggleActions: "play none none reverse",
-        },
-      });
+      const footer = document.querySelector(".site-footer");
+      if (footer) {
+        gsap.from(".footer-heading, .footer-links a, .footer-brand", {
+          y: 14,
+          opacity: 0,
+          filter: "blur(8px)",
+          delay: 0.45,
+          duration: 0.42,
+          stagger: 0.06,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: footer,
+            start: "top 88%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      }
 
       return () => {
         if (cleanupHeroPointer) cleanupHeroPointer();
