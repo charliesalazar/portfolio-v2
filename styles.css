@@ -71,8 +71,84 @@ body {
   line-height: 1.45;
 }
 
+.boot-black {
+  position: fixed;
+  inset: 0;
+  z-index: 5200;
+  background: #000;
+  pointer-events: none;
+}
+
+.intro-columns {
+  position: fixed;
+  inset: 0;
+  z-index: 3200;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  background: var(--c-bg);
+}
+
+.intro-pov {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 50% 50%;
+}
+
+.intro-tray {
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+}
+
+.intro-die {
+  position: relative;
+  width: min(460px, 62vw);
+  height: clamp(44px, 7.2vh, 58px);
+  padding-bottom: 9px;
+  perspective: 999px;
+}
+
+.intro-cube {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.intro-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 118, "wght" 900;
+  font-size: clamp(2.2rem, 5vw, 4.9rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(204, 255, 235, 0.95);
+  backface-visibility: hidden;
+}
+
 .cursor {
   display: none;
+}
+
+@media (max-width: 900px) {
+  .intro-die {
+    width: min(340px, 78vw);
+    height: clamp(34px, 6vh, 44px);
+  }
 }
 
 @media (pointer: fine) {
@@ -210,13 +286,23 @@ a:focus-visible {
   font-stretch: 125%;
   font-variation-settings: "wdth" 125, "wght" 900;
   letter-spacing: -0.085em;
+  perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
-.name-line { display: block; white-space: nowrap; }
+.name-line {
+  display: block;
+  position: relative;
+  white-space: nowrap;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
 
 .name-char {
   display: inline-block;
-  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
 }
 
 .name-char--space {
@@ -285,6 +371,10 @@ a:focus-visible {
   border-color: rgba(255, 252, 225, 0.7);
   transform: translateY(-4px);
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.22);
+}
+
+.work-link.is-transition-source {
+  visibility: hidden;
 }
 
 .work-copy h3 {
@@ -420,6 +510,7 @@ p { margin: 0 0 var(--s-2) 0; }
   background: var(--c-text);
   color: #07070a;
   margin-top: var(--s-8);
+  overflow: hidden;
 }
 
 /* Case modal: fixed viewport shell; panel owns scrolling and focus content. */

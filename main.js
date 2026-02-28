@@ -29,7 +29,12 @@
   const lightboxCaption = lightbox ? lightbox.querySelector("#lightbox-caption") : null;
   const lightboxClose = lightbox ? lightbox.querySelector(".lightbox-close") : null;
   const lightboxBackdrop = lightbox ? lightbox.querySelector(".lightbox-backdrop") : null;
+  const bootBlack = document.querySelector(".boot-black");
   const cursor = document.querySelector(".cursor");
+  const introOverlay = document.querySelector(".intro-columns");
+  const introPov = introOverlay ? introOverlay.querySelector(".intro-pov") : null;
+  const introTray = introOverlay ? introOverlay.querySelector(".intro-tray") : null;
+  const introSeedDie = introOverlay ? introOverlay.querySelector(".intro-die") : null;
   let lastFocused = null;
   let lastFocusedLightbox = null;
   const lightboxZoom = {
@@ -206,6 +211,43 @@
     modal &&
     modalPanel &&
     modalBackdrop;
+
+  const introRots = [
+    { ry: 270, a: 0.5 },
+    { ry: 0, a: 0.9 },
+    { ry: 90, a: 0.45 },
+    { ry: 180, a: 0.06 },
+  ];
+
+  const introFaceColor = (rowIndex, rows, alpha) => {
+    const hue = 150 + (rowIndex / Math.max(1, rows)) * 58;
+    const light = Math.max(0, Math.min(100, alpha * 100));
+    return `hsl(${hue}, 78%, ${light}%)`;
+  };
+
+  const buildIntroColumns = () => {
+    if (!(introTray instanceof HTMLElement) || !(introSeedDie instanceof HTMLElement)) {
+      return { rows: 0, dice: [], cubes: [] };
+    }
+    const rows = window.matchMedia("(max-width: 900px)").matches ? 14 : 19;
+    const existing = Array.from(introTray.querySelectorAll(".intro-die"));
+    existing.slice(1).forEach((die) => die.remove());
+    for (let i = 1; i < rows; i += 1) {
+      introTray.appendChild(introSeedDie.cloneNode(true));
+    }
+    const dice = Array.from(introTray.querySelectorAll(".intro-die")).filter(
+      (die) => die instanceof HTMLElement
+    );
+    const cubes = dice
+      .map((die) => die.querySelector(".intro-cube"))
+      .filter((cube) => cube instanceof HTMLElement);
+    const stackHeight = rows * 56;
+    gsap.set(introTray, { height: stackHeight });
+    if (introPov instanceof HTMLElement) {
+      gsap.set(introPov, { scale: window.innerHeight / stackHeight });
+    }
+    return { rows, dice, cubes };
+  };
 
   const animateModalOpen = (sourceEl) =>
     new Promise((resolve) => {
@@ -836,6 +878,9 @@
 
   // Motion guard: skip enhancements when GSAP is unavailable.
   if (typeof gsap === "undefined") {
+    if (bootBlack instanceof HTMLElement) {
+      bootBlack.style.display = "none";
+    }
     return;
   }
 
@@ -851,7 +896,248 @@
     },
     (context) => {
       const { reduce, isDesktop, isPointerFine } = context.conditions;
-      if (reduce) return;
+      const heroContainer = document.querySelector(".site-header .container");
+      if (reduce) {
+        if (bootBlack instanceof HTMLElement) {
+          gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
+        }
+        if (heroContainer instanceof HTMLElement) {
+          gsap.set(heroContainer, { clearProps: "opacity" });
+        }
+        return;
+      }
+
+      const { rows: introRows, dice: introDice, cubes: introCubes } = buildIntroColumns();
+      const hasIntro =
+        introOverlay instanceof HTMLElement &&
+        introTray instanceof HTMLElement &&
+        heroContainer instanceof HTMLElement &&
+        introRows > 0 &&
+        introCubes.length > 0;
+      let introTl = null;
+      let cleanupIntro = () => {};
+      if (hasIntro) {
+        const introLoops = [];
+        const focusTopIndex = Math.max(0, Math.floor(introRows * 0.56) - 1);
+        const focusBottomIndex = Math.min(introRows - 1, focusTopIndex + 1);
+        const focusDice = [introDice[focusTopIndex], introDice[focusBottomIndex]].filter(
+          (die) => die instanceof HTMLElement
+        );
+        const otherDice = introDice.filter((_, index) => index !== focusTopIndex && index !== focusBottomIndex);
+        const introNameLines = Array.from(heroContainer.querySelectorAll(".name-line")).filter(
+          (line) => line instanceof HTMLElement
+        );
+        const introNameTargetRects = introNameLines.map((line) => line.getBoundingClientRect());
+        gsap.set(heroContainer, { opacity: 0 });
+        if (introNameLines.length) {
+          gsap.set(introNameLines, { opacity: 0 });
+        }
+        gsap.set(introOverlay, { autoAlpha: 1, display: "grid" });
+
+        introCubes.forEach((cube, rowIndex) => {
+          if (!(cube instanceof HTMLElement)) return;
+          const faces = Array.from(cube.querySelectorAll(".intro-face")).filter(
+            (face) => face instanceof HTMLElement
+          );
+          if (faces.length < 4) return;
+
+          gsap.set(faces, {
+            z: 200,
+            rotateY: (i) => introRots[i % introRots.length].ry,
+            transformOrigin: "50% 50% -201px",
+          });
+
+          const phaseA = [introRots[3].a, introRots[0].a, introRots[1].a, introRots[2].a];
+          const phaseB = [introRots[0].a, introRots[1].a, introRots[2].a, introRots[3].a];
+          const phaseC = [introRots[1].a, introRots[2].a, introRots[3].a, introRots[0].a];
+
+          const loop = gsap
+            .timeline({
+              repeat: -1,
+              yoyo: true,
+              paused: true,
+              defaults: { ease: "power3.inOut", duration: 1 },
+            })
+            .fromTo(
+              cube,
+              { rotateY: -90 },
+              { rotateY: 90, ease: "power1.inOut", duration: 2 }
+            )
+            .fromTo(
+              faces,
+              { color: (j) => introFaceColor(rowIndex, introRows, phaseA[j % phaseA.length]) },
+              { color: (j) => introFaceColor(rowIndex, introRows, phaseB[j % phaseB.length]) },
+              0
+            )
+            .to(
+              faces,
+              { color: (j) => introFaceColor(rowIndex, introRows, phaseC[j % phaseC.length]) },
+              1
+            )
+            .progress(rowIndex / introRows);
+          introLoops.push(loop);
+        });
+
+        const trayLoop = gsap
+          .timeline({ repeat: -1, yoyo: true, paused: true })
+          .fromTo(introTray, { yPercent: -3 }, { yPercent: 3, duration: 3.2, ease: "sine.inOut" }, 0)
+          .fromTo(introTray, { rotate: -15 }, { rotate: 15, duration: 6.2, ease: "sine.inOut" }, 0)
+          .fromTo(introTray, { scale: 1.06 }, { scale: 1.2, duration: 3.2, ease: "power2.inOut" }, 0);
+        introLoops.push(trayLoop);
+        introLoops.forEach((loop) => loop.play());
+
+        const introFocusAt = 2.32;
+        const introMorphAt = 3.46;
+        const introOverlayFadeAt = 4.86;
+        const introCleanupAt = 5.56;
+
+        introTl = gsap.timeline({ defaults: { ease: "power2.out" } });
+        introTl
+          .from(
+            introDice,
+            {
+              y: 132,
+              opacity: 0,
+              duration: 0.9,
+              ease: "power3.out",
+              stagger: { each: -0.03, ease: "power2.out" },
+            },
+            0
+          )
+          .to(
+            introCubes,
+            {
+              rotateY: (index) => {
+                if (index === focusTopIndex) return 90;
+                if (index === focusBottomIndex) return 0;
+                return index % 2 === 0 ? 90 : 0;
+              },
+              duration: 0.62,
+              ease: "sine.inOut",
+            },
+            introFocusAt
+          )
+          .to(
+            otherDice,
+            { opacity: 0.56, filter: "blur(1px)", duration: 0.52, ease: "sine.out" },
+            introFocusAt + 0.04
+          )
+          .to(
+            focusDice,
+            { opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "sine.out" },
+            introFocusAt + 0.04
+          )
+          .add(() => {
+            introLoops.forEach((loop) => loop.pause());
+            if (!(heroContainer instanceof HTMLElement) || focusDice.length < 2) return;
+            if (introNameLines.length < 2 || introNameTargetRects.length < 2) return;
+            gsap.set(heroContainer, { opacity: 1 });
+            const sourceRects = focusDice.map((die) => die.getBoundingClientRect());
+            const targetRects = [introNameTargetRects[0], introNameTargetRects[1]];
+            const focusCubes = focusDice
+              .map((die) => die.querySelector(".intro-cube"))
+              .filter((cube) => cube instanceof HTMLElement);
+            focusCubes.forEach((cube, index) => {
+              gsap.set(cube, { rotateY: index === 0 ? 90 : 0 });
+            });
+
+            introNameLines.forEach((line, index) => {
+              const sourceRect = sourceRects[index];
+              const targetRect = targetRects[index];
+              const widthRatio = sourceRect.width / Math.max(1, targetRect.width);
+              gsap.set(line, {
+                position: "fixed",
+                left: targetRect.left,
+                top: targetRect.top,
+                width: targetRect.width,
+                height: targetRect.height,
+                margin: 0,
+                zIndex: 3340,
+                transformOrigin: "top left",
+                x: sourceRect.left - targetRect.left,
+                y: sourceRect.top - targetRect.top,
+                scaleX: widthRatio,
+                scaleY: widthRatio,
+                opacity: 1,
+                filter: "blur(0px)",
+                willChange: "transform, opacity",
+              });
+              gsap.to(line, {
+                x: 0,
+                y: 0,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 1.42,
+                ease: "power2.inOut",
+              });
+            });
+
+            gsap.to(otherDice, {
+              opacity: 0,
+              filter: "blur(10px)",
+              duration: 1.02,
+              ease: "power2.inOut",
+            });
+            gsap.to(focusDice, {
+              opacity: 0,
+              filter: "blur(7px)",
+              duration: 0.64,
+              ease: "power2.inOut",
+            });
+          }, introMorphAt)
+          .to(introOverlay, { autoAlpha: 0, duration: 0.68, ease: "sine.out" }, introOverlayFadeAt)
+          .add(() => {
+            if (introNameLines.length) {
+              gsap.set(introNameLines, {
+                clearProps:
+                  "position,left,top,width,height,margin,zIndex,transformOrigin,x,y,scaleX,scaleY,opacity,filter,willChange",
+              });
+            }
+            gsap.set(introDice, {
+              clearProps: "opacity,filter",
+            });
+          }, introCleanupAt)
+          .add(() => {
+            introLoops.forEach((loop) => loop.kill());
+          })
+          .set(introOverlay, { display: "none" })
+          .to(heroContainer, { opacity: 1, duration: 0.14, ease: "power1.out" }, ">-0.02");
+
+        cleanupIntro = () => {
+          introLoops.forEach((loop) => loop.kill());
+          if (introOverlay instanceof HTMLElement) {
+            gsap.set(introOverlay, { autoAlpha: 0, display: "none" });
+          }
+          gsap.set(introDice, {
+            clearProps: "opacity,filter",
+          });
+          if (heroContainer instanceof HTMLElement) {
+            gsap.set(heroContainer, { clearProps: "opacity" });
+            const nameLines = Array.from(heroContainer.querySelectorAll(".name-line")).filter(
+              (line) => line instanceof HTMLElement
+            );
+            if (nameLines.length) {
+              gsap.set(nameLines, {
+                clearProps:
+                  "position,left,top,width,height,margin,zIndex,transformOrigin,x,y,scaleX,scaleY,opacity,filter,willChange",
+              });
+            }
+          }
+          if (introPov instanceof HTMLElement) {
+            gsap.set(introPov, { clearProps: "transform" });
+          }
+          if (introTray instanceof HTMLElement) {
+            gsap.set(introTray, { clearProps: "transform,height" });
+          }
+        };
+      } else {
+        if (introOverlay instanceof HTMLElement) {
+          gsap.set(introOverlay, { autoAlpha: 0, display: "none" });
+        }
+        if (heroContainer instanceof HTMLElement) {
+          gsap.set(heroContainer, { opacity: 1 });
+        }
+      }
 
       // Split hero name into per-letter spans for a GSAP-style character reveal.
       const heroNameLines = Array.from(document.querySelectorAll(".name-line"));
@@ -880,54 +1166,96 @@
       const heroIntroChars = heroNameChars.filter(
         (charEl) => !charEl.classList.contains("name-char--space")
       );
-      const letterVariants = [
-        { x: -40, duration: 0.72 },
-        { x: -34, duration: 0.7 },
-        { x: -36, duration: 0.74 },
-        { x: -30, duration: 0.68 },
-        { x: -38, duration: 0.73 },
-      ];
 
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      heroTl.addLabel("intro");
-      heroTl.set(
-        heroIntroChars,
-        {
-          opacity: 0,
-          x: 0,
-          yPercent: 0,
-          filter: "blur(8px)",
-        },
-        "intro"
-      );
-      heroIntroChars.forEach((charEl, index) => {
-        const variant = letterVariants[index % letterVariants.length];
-        // Force phrase build from first letter to last letter.
-        const startAt = index * 0.082;
-        const toVars = {
-          x: 0,
-          opacity: 1,
-          duration: variant.duration,
-          filter: "blur(0px)",
-          ease: "power2.out",
-          immediateRender: false,
-        };
-
-        heroTl.fromTo(
-          charEl,
+      let introStartAt = 0;
+      if (introTl) {
+        heroTl.add(introTl);
+        if (bootBlack instanceof HTMLElement) {
+          heroTl.set(bootBlack, { autoAlpha: 0, display: "none" }, 0);
+        }
+        introStartAt = ">";
+      } else if (bootBlack instanceof HTMLElement) {
+        heroTl
+          .set(bootBlack, { autoAlpha: 1, display: "block" }, 0)
+          .to(bootBlack, { autoAlpha: 1, duration: 0.24, ease: "none" }, 0)
+          .to(bootBlack, { autoAlpha: 0, duration: 0.62, ease: "power2.out" }, 0.24)
+          .set(bootBlack, { display: "none" }, 0.86);
+        introStartAt = 0.86;
+      }
+      const shouldAnimateNameChars = !hasIntro;
+      if (shouldAnimateNameChars) {
+        const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
+        heroTl.set(
+          heroNameLines,
           {
-            x: variant.x,
-            yPercent: variant.yPercent,
-            opacity: 0,
-            filter: "blur(8px)",
+            transformPerspective: 1200,
+            transformStyle: "preserve-3d",
           },
-          toVars,
-          `intro+=${startAt}`
+          0
         );
-      });
+        heroTl.set(
+          heroIntroChars,
+          {
+            opacity: 1,
+            rotationX: -96,
+            yPercent: 122,
+            z: -96,
+            filter: "blur(7px)",
+            transformOrigin: `50% 50% -${tubeDepth}px`,
+          },
+          0
+        );
+        heroTl.addLabel("intro", introStartAt);
+        const nameRollSpinDuration = 1.2;
+        const nameRollSettleDuration = 0.56;
+        const nameRollStagger = 0.08;
+        const nameRollStart = 0.14;
+        const nameRollTotal =
+          nameRollSpinDuration +
+          nameRollSettleDuration +
+          nameRollStagger * Math.max(0, heroIntroChars.length - 1);
+
+        heroTl.to(
+          heroIntroChars,
+          {
+            rotationX: 630,
+            yPercent: 0,
+            z: 0,
+            opacity: 1,
+            filter: "blur(1px)",
+            duration: nameRollSpinDuration,
+            ease: "none",
+            stagger: { each: nameRollStagger, from: "start" },
+            immediateRender: false,
+          },
+          `intro+=${nameRollStart}`
+        );
+        heroTl.to(
+          heroIntroChars,
+          {
+            rotationX: 720,
+            filter: "blur(0px)",
+            duration: nameRollSettleDuration,
+            ease: "power3.out",
+            stagger: { each: nameRollStagger, from: "start" },
+            immediateRender: false,
+          },
+          `intro+=${(nameRollStart + nameRollSpinDuration).toFixed(2)}`
+        );
+        heroTl.set(heroIntroChars, { rotationX: 0 }, `intro+=${(nameRollStart + nameRollTotal).toFixed(2)}`);
+        heroTl.addLabel("copyIn", `intro+=${(nameRollStart + nameRollTotal + 0.08).toFixed(2)}`);
+      } else {
+        heroTl.addLabel("intro", introStartAt);
+        heroTl.set(
+          heroIntroChars,
+          { opacity: 1, rotationX: 0, x: 0, yPercent: 0, z: 0, filter: "blur(0px)" },
+          "intro"
+        );
+        heroTl.addLabel("copyIn", "intro+=0.02");
+      }
 
       heroTl
-        .addLabel("copyIn", "-=0.45")
         .from(
           ".rule",
           { scaleX: 0, opacity: 0, filter: "blur(6px)", transformOrigin: "left center", duration: 0.6 },
@@ -1021,20 +1349,6 @@
           { y: 18, opacity: 0, filter: "blur(8px)", duration: 0.7 },
           "copyIn+=0.1"
         );
-      }
-
-      // Keep the hero title subtly "alive" with a gentle breathing loop.
-      const heroBreathingTargets = gsap.utils.toArray(".name-line");
-      if (heroBreathingTargets.length) {
-        gsap.set(heroBreathingTargets, { transformOrigin: "8% 42%" });
-        gsap.to(heroBreathingTargets, {
-          scale: isDesktop ? 1.015 : 1.008,
-          duration: 3.8,
-          ease: "sine.inOut",
-          repeat: -1,
-          yoyo: true,
-          delay: 0.25,
-        });
       }
 
       const cleanupHeroPointer = null;
@@ -1148,6 +1462,10 @@
       }
 
       return () => {
+        cleanupIntro();
+        if (bootBlack instanceof HTMLElement) {
+          gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
+        }
         if (cleanupHeroPointer) cleanupHeroPointer();
         if (cleanupCardPointer) cleanupCardPointer();
       };
