@@ -34,7 +34,7 @@
   --c-muted: rgba(255, 252, 225, 0.78);
   --c-accent: #ffb43b;
   --radius: 16px;
-  --boot-failsafe-delay: 8s;
+  --boot-failsafe-delay: 3.2s;
 }
 
 /* Base: predictable box model */

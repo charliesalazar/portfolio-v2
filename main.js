@@ -56,6 +56,11 @@
   const introPov = introOverlay ? introOverlay.querySelector(".intro-pov") : null;
   const introTray = introOverlay ? introOverlay.querySelector(".intro-tray") : null;
   const introSeedDie = introOverlay ? introOverlay.querySelector(".intro-die") : null;
+  const hasIntroMarkup =
+    introOverlay instanceof HTMLElement &&
+    introPov instanceof HTMLElement &&
+    introTray instanceof HTMLElement &&
+    introSeedDie instanceof HTMLElement;
   let lastFocused = null;
   let lastFocusedLightbox = null;
   const lightboxZoom = {
@@ -88,14 +93,19 @@
   };
 
   if (bootStartsHidden) {
-    // Runtime fail-safe for mobile browsers/CDN hiccups: never stay black forever.
-    window.setTimeout(() => {
+    const emergencyRevealBoot = () => {
+      if (!(pageRoot instanceof HTMLElement) || !pageRoot.classList.contains("boot-hidden")) return;
       revealBootPage();
       setIntroScrollLock(false);
       if (bootBlack instanceof HTMLElement) {
         bootBlack.style.display = "none";
       }
-    }, 9000);
+    };
+    // Runtime fail-safe for mobile browsers/CDN hiccups: never stay black forever.
+    const failSafeDelay = hasIntroMarkup ? 8000 : 3200;
+    window.setTimeout(emergencyRevealBoot, failSafeDelay);
+    window.addEventListener("error", emergencyRevealBoot, { once: true });
+    window.addEventListener("unhandledrejection", emergencyRevealBoot, { once: true });
   }
 
   const isResponsiveRaster = (pathname) =>
@@ -1047,8 +1057,11 @@
     return;
   }
 
-  // Enable scroll-based reveal triggers.
-  gsap.registerPlugin(ScrollTrigger);
+  const hasScrollTrigger = typeof ScrollTrigger !== "undefined";
+  if (hasScrollTrigger) {
+    // Enable scroll-based reveal triggers when plugin is available.
+    gsap.registerPlugin(ScrollTrigger);
+  }
 
   const mm = gsap.matchMedia();
   mm.add(
@@ -1600,92 +1613,94 @@
         };
       }
 
-      // Section heading reveal (label + rule draw) on scroll.
-      ["#work-title", "#about-title"].forEach((selector) => {
-        const sectionTitle = document.querySelector(selector);
-        if (!(sectionTitle instanceof HTMLElement)) return;
-        gsap.set(sectionTitle, { "--h2-rule-scale": 0, opacity: 0, y: 16, filter: "blur(8px)" });
-        gsap
-          .timeline({
-            defaults: { ease: "power3.out" },
+      if (hasScrollTrigger) {
+        // Section heading reveal (label + rule draw) on scroll.
+        ["#work-title", "#about-title"].forEach((selector) => {
+          const sectionTitle = document.querySelector(selector);
+          if (!(sectionTitle instanceof HTMLElement)) return;
+          gsap.set(sectionTitle, { "--h2-rule-scale": 0, opacity: 0, y: 16, filter: "blur(8px)" });
+          gsap
+            .timeline({
+              defaults: { ease: "power3.out" },
+              scrollTrigger: {
+                trigger: sectionTitle,
+                start: "top 86%",
+                toggleActions: "play none none none",
+              },
+            })
+            .to(sectionTitle, {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.56,
+              letterSpacing: "0.12em",
+              clearProps: "letterSpacing",
+            })
+            .to(
+              sectionTitle,
+              { "--h2-rule-scale": 1, duration: 0.62, ease: "power2.out" },
+              0.06
+            );
+        });
+
+        gsap.utils.toArray(".work-item").forEach((item) => {
+          gsap.from(item, {
+            y: 28,
+            opacity: 0,
+            filter: "blur(10px)",
+            duration: 0.8,
+            ease: "power3.out",
             scrollTrigger: {
-              trigger: sectionTitle,
-              start: "top 86%",
+              trigger: item,
+              start: "top 80%",
               toggleActions: "play none none none",
             },
-          })
-          .to(sectionTitle, {
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            duration: 0.56,
-            letterSpacing: "0.12em",
-            clearProps: "letterSpacing",
-          })
-          .to(
-            sectionTitle,
-            { "--h2-rule-scale": 1, duration: 0.62, ease: "power2.out" },
-            0.06
-          );
-      });
+          });
+        });
 
-      gsap.utils.toArray(".work-item").forEach((item) => {
-        gsap.from(item, {
-          y: 28,
+        gsap.from(".about-photo", {
+          y: 40,
           opacity: 0,
           filter: "blur(10px)",
+          duration: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".about-bleed",
+            start: "top 75%",
+            toggleActions: "play none none none",
+          },
+        });
+
+        gsap.from(".about-layout p", {
+          y: 20,
+          opacity: 0,
+          filter: "blur(8px)",
           duration: 0.8,
           ease: "power3.out",
           scrollTrigger: {
-            trigger: item,
+            trigger: ".about-layout",
             start: "top 80%",
             toggleActions: "play none none none",
           },
         });
-      });
 
-      gsap.from(".about-photo", {
-        y: 40,
-        opacity: 0,
-        filter: "blur(10px)",
-        duration: 1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: ".about-bleed",
-          start: "top 75%",
-          toggleActions: "play none none none",
-        },
-      });
-
-      gsap.from(".about-layout p", {
-        y: 20,
-        opacity: 0,
-        filter: "blur(8px)",
-        duration: 0.8,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: ".about-layout",
-          start: "top 80%",
-          toggleActions: "play none none none",
-        },
-      });
-
-      const footer = document.querySelector(".site-footer");
-      if (footer) {
-        gsap.from(".footer-heading, .footer-links a, .footer-brand", {
-          y: 14,
-          opacity: 0,
-          filter: "blur(8px)",
-          delay: 0.45,
-          duration: 0.42,
-          stagger: 0.06,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: footer,
-            start: "top 88%",
-            toggleActions: "play none none none",
-          },
-        });
+        const footer = document.querySelector(".site-footer");
+        if (footer) {
+          gsap.from(".footer-heading, .footer-links a, .footer-brand", {
+            y: 14,
+            opacity: 0,
+            filter: "blur(8px)",
+            delay: 0.45,
+            duration: 0.42,
+            stagger: 0.06,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: footer,
+              start: "top 88%",
+              toggleActions: "play none none none",
+            },
+          });
+        }
       }
 
       return () => {
