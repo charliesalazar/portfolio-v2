@@ -1410,7 +1410,7 @@
       );
       const nickname = document.querySelector(".nickname");
 
-      const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      const heroTl = gsap.timeline({ defaults: { ease: "power3.out", immediateRender: false } });
       let introStartAt = 0;
       if (introTl) {
         heroTl.add(introTl);
@@ -1444,7 +1444,6 @@
             rotationX: -96,
             yPercent: 122,
             z: -96,
-            filter: "blur(7px)",
             transformOrigin: `50% 50% -${tubeDepth}px`,
           },
           0
@@ -1466,7 +1465,6 @@
             yPercent: 0,
             z: 0,
             opacity: 1,
-            filter: "blur(1px)",
             duration: nameRollSpinDuration,
             ease: "none",
             stagger: { each: nameRollStagger, from: "start" },
@@ -1478,7 +1476,6 @@
           heroIntroChars,
           {
             rotationX: 720,
-            filter: "blur(0px)",
             duration: nameRollSettleDuration,
             ease: "power3.out",
             stagger: { each: nameRollStagger, from: "start" },
@@ -1492,17 +1489,17 @@
         heroTl.addLabel("intro", introStartAt);
         heroTl.set(
           heroIntroChars,
-          { opacity: 1, rotationX: 0, x: 0, yPercent: 0, z: 0, filter: "blur(0px)" },
+          { opacity: 1, rotationX: 0, x: 0, yPercent: 0, z: 0 },
           "intro"
         );
         heroTl.addLabel("copyIn", "intro+=0.02");
       }
       let unlockAt = "copyIn+=0.02";
       if (nickname instanceof HTMLElement && shouldRunBootIntro) {
-        heroTl.set(nickname, { opacity: 0, y: 8, filter: "blur(6px)" }, 0);
+        heroTl.set(nickname, { opacity: 0, y: 8 }, 0);
         heroTl.to(
           nickname,
-          { opacity: 0.9, y: 0, filter: "blur(0px)", duration: 0.42, ease: "power2.out" },
+          { opacity: 0.9, y: 0, duration: 0.42, ease: "power2.out" },
           "copyIn+=0.04"
         );
         unlockAt = "copyIn+=0.46";
@@ -1516,14 +1513,13 @@
         const finalRuleWidth = Math.max(1, Math.round(heroRule.getBoundingClientRect().width));
         heroTl.fromTo(
           heroRule,
-          { width: 0, opacity: 0, filter: "blur(6px)" },
+          { width: 0, opacity: 0 },
           {
             width: finalRuleWidth,
             opacity: 1,
-            filter: "blur(0px)",
             duration: 0.62,
             ease: "power2.out",
-            clearProps: "width,opacity,filter",
+            clearProps: "width,opacity",
           },
           "copyIn+=0.2"
         );
@@ -1562,11 +1558,10 @@
 
         heroTl.fromTo(
           normalTaglineWords,
-          { y: 12, opacity: 0, filter: "blur(8px)" },
+          { y: 12, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            filter: "blur(0px)",
             duration: 0.42,
             stagger: 0.085,
             ease: "power2.out",
@@ -1588,11 +1583,10 @@
           const slightlyChars = gsap.utils.toArray(".tagline-word--slightly .tagline-char");
           heroTl.fromTo(
             slightlyChars,
-            { y: 8, opacity: 0, filter: "blur(8px)" },
+            { y: 8, opacity: 0 },
             {
               y: 0,
               opacity: 1,
-              filter: "blur(0px)",
               duration: 0.24,
               stagger: 0.095,
               ease: "power2.out",
@@ -1604,11 +1598,10 @@
         if (shorterWord instanceof HTMLElement) {
           heroTl.fromTo(
             shorterWord,
-            { y: 8, opacity: 0, filter: "blur(8px)" },
+            { y: 8, opacity: 0 },
             {
               y: 0,
               opacity: 1,
-              filter: "blur(0px)",
               duration: 0.36,
               ease: "power2.out",
             },
@@ -1619,7 +1612,7 @@
         if (shouldRunBootIntro) {
           heroTl.from(
           ".tagline",
-          { y: 18, opacity: 0, filter: "blur(8px)", duration: 0.7 },
+          { y: 18, opacity: 0, duration: 0.7 },
           "copyIn+=0.1"
           );
         }
