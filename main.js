@@ -986,7 +986,6 @@
     syncCursorSuppression = () => {
       const shouldSuppress =
         modalTransitionState !== "idle" ||
-        (modal && modal.classList.contains("is-open")) ||
         (lightbox && lightbox.classList.contains("is-open"));
       document.body.classList.toggle("cursor-suppressed", Boolean(shouldSuppress));
       if (shouldSuppress) hideCursor();
