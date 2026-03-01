@@ -92,6 +92,12 @@
     pageRoot.style.opacity = "";
     pageRoot.style.visibility = "";
   };
+  const isPageVisiblyBooted = () => {
+    if (!(pageRoot instanceof HTMLElement)) return true;
+    const pageStyles = window.getComputedStyle(pageRoot);
+    const opacity = Number.parseFloat(pageStyles.opacity || "1");
+    return pageStyles.visibility !== "hidden" && opacity > 0.95;
+  };
 
   const startCssHeroFallback = () => {
     if (!bootStartsHidden || fallbackHeroStarted) return;
@@ -105,6 +111,15 @@
   if (bootStartsHidden) {
     const emergencyRevealBoot = () => {
       if (!(pageRoot instanceof HTMLElement) || !pageRoot.classList.contains("boot-hidden")) return;
+      // CSS fail-safe may already have revealed the page; avoid replaying fallback animation in that case.
+      if (isPageVisiblyBooted()) {
+        revealBootPage();
+        setIntroScrollLock(false);
+        if (bootBlack instanceof HTMLElement) {
+          bootBlack.style.display = "none";
+        }
+        return;
+      }
       revealBootPage();
       startCssHeroFallback();
       setIntroScrollLock(false);
@@ -1121,14 +1136,7 @@
     (context) => {
       const { isDesktop, isPointerFine } = context.conditions;
       const heroContainer = document.querySelector(".site-header .container");
-      const bootAlreadyVisible =
-        bootStartsHidden &&
-        pageRoot instanceof HTMLElement &&
-        (() => {
-          const pageStyles = window.getComputedStyle(pageRoot);
-          const opacity = Number.parseFloat(pageStyles.opacity || "1");
-          return pageStyles.visibility !== "hidden" && opacity > 0.95;
-        })();
+      const bootAlreadyVisible = bootStartsHidden && isPageVisiblyBooted();
       const shouldRunBootIntro = bootStartsHidden && !bootAlreadyVisible;
       if (bootAlreadyVisible) {
         revealBootPage();

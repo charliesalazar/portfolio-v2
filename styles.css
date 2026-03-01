@@ -297,11 +297,9 @@ body.intro-scroll-lock {
 @keyframes hero-fallback-rise {
   from {
     transform: translateY(16px);
-    filter: blur(8px);
   }
   to {
     transform: translateY(0);
-    filter: blur(0px);
   }
 }
 
@@ -309,12 +307,10 @@ body.intro-scroll-lock {
   from {
     width: 0;
     opacity: 0;
-    filter: blur(6px);
   }
   to {
     width: 72px;
     opacity: 1;
-    filter: blur(0px);
   }
 }
 
