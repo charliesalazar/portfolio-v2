@@ -1192,7 +1192,7 @@ body.modal-open {
     margin-bottom: 60px;
     padding-top: 0;
     padding-bottom: 0;
-    min-height: 78vh;
+    min-height: 96svh;
     display: flex;
     align-items: center;
   }
