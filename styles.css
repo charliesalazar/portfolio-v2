@@ -294,6 +294,60 @@ body.intro-scroll-lock {
   }
 }
 
+@keyframes hero-fallback-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes hero-fallback-rule {
+  from {
+    width: 0;
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    width: 72px;
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+body.css-hero-fallback .name-line,
+body.css-hero-fallback .nickname,
+body.css-hero-fallback .tagline {
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  animation: hero-fallback-rise 0.64s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+body.css-hero-fallback .name-line:nth-of-type(1) {
+  animation-delay: 0.06s;
+}
+
+body.css-hero-fallback .name-line:nth-of-type(2) {
+  animation-delay: 0.16s;
+}
+
+body.css-hero-fallback .nickname {
+  animation-delay: 0.36s;
+}
+
+body.css-hero-fallback .tagline {
+  animation-delay: 0.52s;
+}
+
+body.css-hero-fallback .rule {
+  animation: hero-fallback-rule 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.68s forwards;
+}
+
 .container {
   max-width: var(--max-w);
   margin-left: auto;

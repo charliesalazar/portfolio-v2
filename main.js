@@ -80,6 +80,7 @@
   let modalTransitionState = "idle";
   let activeFadeTargets = [];
   let cleanupModalMediaReveal = () => {};
+  let fallbackHeroStarted = false;
   let syncCursorSuppression = () => {};
   const revealBootPage = () => {
     if (!(pageRoot instanceof HTMLElement)) return;
@@ -92,10 +93,20 @@
     pageRoot.style.visibility = "";
   };
 
+  const startCssHeroFallback = () => {
+    if (!bootStartsHidden || fallbackHeroStarted) return;
+    fallbackHeroStarted = true;
+    document.body.classList.add("css-hero-fallback");
+    window.setTimeout(() => {
+      document.body.classList.remove("css-hero-fallback");
+    }, 2400);
+  };
+
   if (bootStartsHidden) {
     const emergencyRevealBoot = () => {
       if (!(pageRoot instanceof HTMLElement) || !pageRoot.classList.contains("boot-hidden")) return;
       revealBootPage();
+      startCssHeroFallback();
       setIntroScrollLock(false);
       if (bootBlack instanceof HTMLElement) {
         bootBlack.style.display = "none";
@@ -1050,6 +1061,7 @@
   // Motion guard: skip enhancements when GSAP is unavailable.
   if (typeof gsap === "undefined") {
     revealBootPage();
+    startCssHeroFallback();
     setIntroScrollLock(false);
     if (bootBlack instanceof HTMLElement) {
       bootBlack.style.display = "none";
