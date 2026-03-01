@@ -29,13 +29,14 @@
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="styles.css?v=20260301j" />
+    <link rel="stylesheet" href="styles.css?v=20260301k" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
-    <script src="main.js?v=20260301j" defer></script>
+    <script src="main.js?v=20260301k" defer></script>
   </head>
 
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="boot-black" aria-hidden="true"></div>
     <div class="cursor" aria-hidden="true">
       <span class="cursor-text">GO</span>
@@ -62,7 +63,7 @@
       </header>
 
       <!-- Main content -->
-      <main>
+      <main id="main-content">
         <!-- Selected work -->
         <section aria-labelledby="work-title">
           <div class="container">
@@ -75,7 +76,7 @@
                   <h3>Transforming Network Data into Interactive 3D Insights</h3>
                   <p>Empowering users with a dynamic, real-time visualization tool for faster decision-making.</p>
                 </div>
-                <div class="work-media">
+                <figure class="work-media">
                   <img
                     src="assets/work-earthview.jpg"
                     srcset="assets/work-earthview-640.jpg 640w, assets/work-earthview.jpg 1913w"
@@ -84,7 +85,7 @@
                     height="1305"
                     alt="EarthView 3D network visualization"
                   />
-                </div>
+                </figure>
               </a>
             </li>
             <li class="work-item">
@@ -93,7 +94,7 @@
                   <h3>Improving IT Workflows with Better Monitoring</h3>
                   <p>Enhancing endpoint monitoring with better navigation, customization, and efficiency.</p>
                 </div>
-                <div class="work-media">
+                <figure class="work-media">
                   <img
                     src="assets/work-endpoint-thumb.png"
                     srcset="assets/work-endpoint-thumb-640.png 640w, assets/work-endpoint-thumb.png 1280w"
@@ -102,7 +103,7 @@
                     height="800"
                     alt="Endpoint monitoring dashboard redesign"
                   />
-                </div>
+                </figure>
               </a>
             </li>
             <li class="work-item">
@@ -111,7 +112,7 @@
                   <h3>Improving the platform experience for SolarWinds users</h3>
                   <p>Reworked navigation and templates to better reflect how people actually explore and evaluate products.</p>
                 </div>
-                <div class="work-media">
+                <figure class="work-media">
                   <img
                     src="assets/work-solarwinds-thumb.png"
                     srcset="assets/work-solarwinds-thumb-640.png 640w, assets/work-solarwinds-thumb.png 1280w"
@@ -120,7 +121,7 @@
                     height="800"
                     alt="SolarWinds platform experience improvements"
                   />
-                </div>
+                </figure>
               </a>
             </li>
             <li class="work-item">
@@ -129,7 +130,7 @@
                   <h3>Modernizing eCommerce workflows for industrial buyers</h3>
                   <p>A design system and navigation overhaul rooted in real customer feedback.</p>
                 </div>
-                <div class="work-media">
+                <figure class="work-media">
                   <img
                     src="assets/work-transcat-thumb.png"
                     srcset="assets/work-transcat-thumb-640.png 640w, assets/work-transcat-thumb.png 1280w"
@@ -138,7 +139,7 @@
                     height="800"
                     alt="Transcat eCommerce workflow modernization"
                   />
-                </div>
+                </figure>
               </a>
             </li>
             </ul>
@@ -153,13 +154,14 @@
           </div>
 
           <!-- Full-bleed portrait -->
-          <div class="about-bleed">
+          <figure class="about-bleed">
             <img
               class="about-photo"
               src="assets/about.jpg"
               alt="Portrait of Carlos (Charlie) Salazar"
             />
-          </div>
+            <figcaption class="sr-only">Portrait of Carlos (Charlie) Salazar.</figcaption>
+          </figure>
 
           <!-- Aligned body copy -->
           <div class="container about-text-container">

@@ -71,6 +71,37 @@ body {
   line-height: 1.45;
 }
 
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 10000;
+  padding: 10px 14px;
+  background: var(--c-text);
+  color: #07070a;
+  text-decoration: none;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 110, "wght" 700;
+  letter-spacing: 0.04em;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 body.intro-scroll-lock {
   overflow: hidden;
 }
@@ -474,6 +505,7 @@ p { margin: 0 0 var(--s-2) 0; }
 
 .about-bleed {
   width: 100vw;
+  margin-top: 0;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   margin-bottom: var(--s-6);
