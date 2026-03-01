@@ -1085,11 +1085,28 @@
     (context) => {
       const { isDesktop, isPointerFine } = context.conditions;
       const heroContainer = document.querySelector(".site-header .container");
+      const bootAlreadyVisible =
+        bootStartsHidden &&
+        pageRoot instanceof HTMLElement &&
+        (() => {
+          const pageStyles = window.getComputedStyle(pageRoot);
+          const opacity = Number.parseFloat(pageStyles.opacity || "1");
+          return pageStyles.visibility !== "hidden" && opacity > 0.95;
+        })();
+      const shouldRunBootIntro = bootStartsHidden && !bootAlreadyVisible;
+      if (bootAlreadyVisible) {
+        revealBootPage();
+        setIntroScrollLock(false);
+        if (bootBlack instanceof HTMLElement) {
+          gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
+        }
+      }
       // Keep the hero intro deterministic across mobile Safari variants.
       // Some iPhone sessions report reduced-motion unexpectedly, which previously skipped the intro.
 
       const { rows: introRows, dice: introDice, cubes: introCubes } = buildIntroColumns();
       const hasIntro =
+        shouldRunBootIntro &&
         introOverlay instanceof HTMLElement &&
         introTray instanceof HTMLElement &&
         heroContainer instanceof HTMLElement &&
@@ -1357,7 +1374,7 @@
           heroTl.set(bootBlack, { autoAlpha: 0, display: "none" }, 0);
         }
         introStartAt = ">";
-      } else if (bootBlack instanceof HTMLElement && bootStartsHidden) {
+      } else if (bootBlack instanceof HTMLElement && shouldRunBootIntro) {
         heroTl
           .set(bootBlack, { autoAlpha: 1, display: "block" }, 0)
           .set(bootBlack, { autoAlpha: 0, display: "none" }, 0.2);
@@ -1365,7 +1382,7 @@
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
-      const shouldAnimateNameChars = !hasIntro && bootStartsHidden;
+      const shouldAnimateNameChars = !hasIntro && shouldRunBootIntro;
       if (shouldAnimateNameChars) {
         const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
         heroTl.set(
@@ -1437,7 +1454,7 @@
         heroTl.addLabel("copyIn", "intro+=0.02");
       }
       let unlockAt = "copyIn+=0.02";
-      if (nickname instanceof HTMLElement && bootStartsHidden) {
+      if (nickname instanceof HTMLElement && shouldRunBootIntro) {
         heroTl.set(nickname, { opacity: 0, y: 8, filter: "blur(6px)" }, 0);
         heroTl.to(
           nickname,
@@ -1451,7 +1468,7 @@
       }, "intro");
 
       const heroRule = document.querySelector(".rule");
-      if (heroRule instanceof HTMLElement && bootStartsHidden) {
+      if (heroRule instanceof HTMLElement && shouldRunBootIntro) {
         const finalRuleWidth = Math.max(1, Math.round(heroRule.getBoundingClientRect().width));
         heroTl.fromTo(
           heroRule,
@@ -1468,14 +1485,14 @@
         );
       }
       heroTl.addLabel("settle");
-      if (bootStartsHidden) {
+      if (shouldRunBootIntro) {
         heroTl.add(() => {
           setIntroScrollLock(false);
         }, unlockAt);
       }
 
       const tagline = document.querySelector(".tagline");
-      if (tagline instanceof HTMLElement && bootStartsHidden) {
+      if (tagline instanceof HTMLElement && shouldRunBootIntro) {
         if (!tagline.dataset.wordsReady) {
           const raw = (tagline.textContent || "").trim().replace(/\s+/g, " ");
           const words = raw.split(" ").filter(Boolean);
@@ -1555,7 +1572,7 @@
           );
         }
       } else {
-        if (bootStartsHidden) {
+        if (shouldRunBootIntro) {
           heroTl.from(
           ".tagline",
           { y: 18, opacity: 0, filter: "blur(8px)", duration: 0.7 },
