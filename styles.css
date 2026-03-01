@@ -296,10 +296,12 @@ body.intro-scroll-lock {
 
 @keyframes hero-fallback-rise {
   from {
+    opacity: 0;
     transform: translateY(16px);
     filter: blur(8px);
   }
   to {
+    opacity: 1;
     transform: translateY(0);
     filter: blur(0px);
   }
@@ -321,6 +323,7 @@ body.intro-scroll-lock {
 body.css-hero-fallback .name-line,
 body.css-hero-fallback .nickname,
 body.css-hero-fallback .tagline {
+  opacity: 0;
   will-change: transform, opacity, filter;
   animation: hero-fallback-rise 0.64s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
