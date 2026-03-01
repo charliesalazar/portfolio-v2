@@ -1426,9 +1426,8 @@
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
-      const shouldAnimateNameChars = !hasIntro && bootStartsHidden;
+      const shouldAnimateNameChars = !hasIntro && shouldRunBootIntro;
       if (shouldAnimateNameChars) {
-        const isLateBootRoll = !shouldRunBootIntro;
         const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
         heroTl.set(
           heroNameLines,
@@ -1438,38 +1437,23 @@
           },
           0
         );
-        if (shouldRunBootIntro) {
-          heroTl.set(
-            heroIntroChars,
-            {
-              opacity: 1,
-              rotationX: -96,
-              yPercent: 122,
-              z: -96,
-              filter: "blur(7px)",
-              transformOrigin: `50% 50% -${tubeDepth}px`,
-            },
-            0
-          );
-        } else {
-          heroTl.set(
-            heroIntroChars,
-            {
-              opacity: 1,
-              rotationX: 0,
-              yPercent: 0,
-              z: 0,
-              filter: "blur(0px)",
-              transformOrigin: `50% 50% -${tubeDepth}px`,
-            },
-            0
-          );
-        }
+        heroTl.set(
+          heroIntroChars,
+          {
+            opacity: 1,
+            rotationX: -96,
+            yPercent: 122,
+            z: -96,
+            filter: "blur(7px)",
+            transformOrigin: `50% 50% -${tubeDepth}px`,
+          },
+          0
+        );
         heroTl.addLabel("intro", introStartAt);
-        const nameRollSpinDuration = isLateBootRoll ? 0.84 : 1.2;
-        const nameRollSettleDuration = isLateBootRoll ? 0.36 : 0.56;
-        const nameRollStagger = isLateBootRoll ? 0.05 : 0.08;
-        const nameRollStart = isLateBootRoll ? 0.02 : 0.14;
+        const nameRollSpinDuration = 1.2;
+        const nameRollSettleDuration = 0.56;
+        const nameRollStagger = 0.08;
+        const nameRollStart = 0.14;
         const nameRollTotal =
           nameRollSpinDuration +
           nameRollSettleDuration +
@@ -1478,13 +1462,13 @@
         heroTl.to(
           heroIntroChars,
           {
-            rotationX: isLateBootRoll ? 680 : 630,
+            rotationX: 630,
             yPercent: 0,
             z: 0,
             opacity: 1,
-            filter: isLateBootRoll ? "blur(0px)" : "blur(1px)",
+            filter: "blur(1px)",
             duration: nameRollSpinDuration,
-            ease: isLateBootRoll ? "power1.inOut" : "none",
+            ease: "none",
             stagger: { each: nameRollStagger, from: "start" },
             immediateRender: false,
           },
