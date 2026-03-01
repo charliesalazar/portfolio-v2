@@ -30,6 +30,8 @@
   const lightboxClose = lightbox ? lightbox.querySelector(".lightbox-close") : null;
   const lightboxBackdrop = lightbox ? lightbox.querySelector(".lightbox-backdrop") : null;
   const bootBlack = document.querySelector(".boot-black");
+  const pageRoot = document.querySelector(".page");
+  const bootStartsHidden = pageRoot instanceof HTMLElement && pageRoot.classList.contains("boot-hidden");
   const cursor = document.querySelector(".cursor");
   const introOverlay = document.querySelector(".intro-columns");
   const introPov = introOverlay ? introOverlay.querySelector(".intro-pov") : null;
@@ -54,6 +56,16 @@
   let modalTransitionState = "idle";
   let activeFadeTargets = [];
   let syncCursorSuppression = () => {};
+  const revealBootPage = () => {
+    if (!(pageRoot instanceof HTMLElement)) return;
+    pageRoot.classList.remove("boot-hidden");
+    if (typeof gsap !== "undefined") {
+      gsap.set(pageRoot, { clearProps: "opacity,visibility" });
+      return;
+    }
+    pageRoot.style.opacity = "";
+    pageRoot.style.visibility = "";
+  };
 
   const isResponsiveRaster = (pathname) =>
     /\.(png|jpe?g)$/i.test(pathname) && !/-640\.(png|jpe?g)$/i.test(pathname);
@@ -268,27 +280,48 @@
       const fromScaleY = Math.max(0.15, sourceRect.height / Math.max(1, targetRect.height));
       const fromX = sourceRect.left - targetRect.left;
       const fromY = sourceRect.top - targetRect.top;
-      const sourceCard = sourceEl.closest(".work-item");
-      const siblingCards = Array.from(document.querySelectorAll(".work-item")).filter(
-        (item) => item instanceof HTMLElement && item !== sourceCard
-      );
-      const sourceCopy = sourceEl.querySelector(".work-copy");
-      const sourceMedia = sourceEl.querySelector(".work-media");
-      const sourceParts = [sourceCopy, sourceMedia].filter((el) => el instanceof HTMLElement);
       const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
-      const siblingFadeDuration = 0.22;
-      const shellExpandStart = siblingFadeDuration + (isMobileViewport ? 0.12 : 0.14);
-      const sourceExitDuration = isMobileViewport ? 0.1 : 0.12;
-      const sourceExitLeadIn = isMobileViewport ? 0.03 : 0.04;
-      const sourceSequenceOffset = isMobileViewport ? 0.05 : 0.06;
-      const sourceExitStart = Math.max(0, shellExpandStart - sourceExitDuration - sourceExitLeadIn);
-      const sourceMediaExitStart =
-        sourceCopy instanceof HTMLElement
-          ? sourceExitStart + sourceSequenceOffset
-          : sourceExitStart;
-      activeFadeTargets = siblingCards;
+      const shellDuration = isMobileViewport ? 0.5 : 0.56;
+      const sourceRadius = getComputedStyle(sourceEl).borderRadius || "16px";
+      const ghostToX = targetRect.left - sourceRect.left;
+      const ghostToY = targetRect.top - sourceRect.top;
+      const ghostToScaleX = Math.max(0.15, targetRect.width / Math.max(1, sourceRect.width));
+      const ghostToScaleY = Math.max(0.15, targetRect.height / Math.max(1, sourceRect.height));
+      activeFadeTargets = [];
+
+      let transitionGhost = null;
+      const cleanupGhost = () => {
+        if (transitionGhost && transitionGhost.parentNode) {
+          transitionGhost.parentNode.removeChild(transitionGhost);
+        }
+        transitionGhost = null;
+        gsap.set(sourceEl, { clearProps: "visibility" });
+      };
 
       modal.classList.add("is-transitioning");
+      gsap.set(sourceEl, { visibility: "hidden" });
+
+      transitionGhost = sourceEl.cloneNode(true);
+      if (transitionGhost instanceof HTMLElement) {
+        transitionGhost.classList.add("modal-transition-ghost", "modal-transition-ghost--card");
+        transitionGhost.setAttribute("aria-hidden", "true");
+        transitionGhost.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+        transitionGhost
+          .querySelectorAll("a, button, input, select, textarea, [tabindex]")
+          .forEach((el) => el.setAttribute("tabindex", "-1"));
+        document.body.appendChild(transitionGhost);
+        gsap.set(transitionGhost, {
+          x: sourceRect.left,
+          y: sourceRect.top,
+          width: sourceRect.width,
+          height: sourceRect.height,
+          opacity: 1,
+          transformOrigin: "top left",
+          borderRadius: sourceRadius,
+          overflow: "hidden",
+        });
+      }
+
       gsap.set(modalBackdrop, { opacity: 0 });
       gsap.set(modalPanel, {
         opacity: 0,
@@ -297,65 +330,36 @@
         scaleX: fromScaleX,
         scaleY: fromScaleY,
         transformOrigin: "top left",
-        borderRadius: getComputedStyle(sourceEl).borderRadius || "24px",
+        borderRadius: sourceRadius,
         overflow: "hidden",
       });
-      if (modalBody) gsap.set(modalBody, { opacity: 0, filter: "blur(10px)" });
-      if (closeButton) gsap.set(closeButton, { opacity: 0, filter: "blur(10px)" });
+      if (modalBody) gsap.set(modalBody, { opacity: 0, filter: "blur(8px)" });
+      if (closeButton) gsap.set(closeButton, { opacity: 0, filter: "blur(8px)" });
+
+      let animationSettled = false;
+      const cleanupAndResolve = () => {
+        if (animationSettled) return;
+        animationSettled = true;
+        cleanupGhost();
+        gsap.set(modalPanel, {
+          clearProps: "opacity,transform,borderRadius,x,y,scaleX,scaleY,transformOrigin,overflow",
+        });
+        gsap.set(modalBackdrop, { clearProps: "opacity" });
+        if (modalBody) gsap.set(modalBody, { clearProps: "opacity,filter" });
+        if (closeButton) gsap.set(closeButton, { clearProps: "opacity,filter" });
+        modal.classList.remove("is-transitioning");
+        resolve();
+      };
 
       const timeline = gsap.timeline({
         defaults: { ease: "power3.out" },
-        onComplete: () => {
-          sourceEl.classList.remove("is-transition-source");
-          gsap.set(modalPanel, {
-            clearProps: "opacity,transform,borderRadius,x,y,scaleX,scaleY,transformOrigin,overflow",
-          });
-          gsap.set(modalBackdrop, { clearProps: "opacity" });
-          if (modalBody) gsap.set(modalBody, { clearProps: "opacity,filter" });
-          if (closeButton) gsap.set(closeButton, { clearProps: "opacity,filter" });
-          gsap.set(sourceParts, { clearProps: "opacity,filter" });
-          modal.classList.remove("is-transitioning");
-          resolve();
-        },
+        onComplete: cleanupAndResolve,
+        onInterrupt: cleanupAndResolve,
       });
 
       timeline
-        // 2) Other cards blur out.
-        .to(
-          siblingCards,
-          { opacity: 0.2, filter: "blur(8px)", duration: siblingFadeDuration, ease: "power2.out", stagger: 0.012 },
-          0
-        );
-      // 3) The source card content exits in sequence (copy first, then image).
-      if (sourceCopy instanceof HTMLElement) {
-        timeline.to(
-          sourceCopy,
-          {
-            opacity: 0,
-            filter: "blur(10px)",
-            duration: sourceExitDuration,
-            ease: "power2.out",
-          },
-          sourceExitStart
-        );
-      }
-      if (sourceMedia instanceof HTMLElement) {
-        timeline.to(
-          sourceMedia,
-          {
-            opacity: 0,
-            filter: "blur(10px)",
-            duration: sourceExitDuration,
-            ease: "power2.out",
-          },
-          sourceMediaExitStart
-        );
-      }
-      timeline
-        .set(modalPanel, { opacity: 1 }, shellExpandStart)
-        .add(() => sourceEl.classList.add("is-transition-source"), shellExpandStart + 0.01)
-        // 4) Expand the card into modal shell.
-        .to(modalBackdrop, { opacity: 1, duration: 0.22 }, shellExpandStart)
+        .to(modalBackdrop, { opacity: 1, duration: 0.24, ease: "power2.out" }, 0)
+        .to(modalPanel, { opacity: 1, duration: 0.16, ease: "power1.out" }, 0.06)
         .to(
           modalPanel,
           {
@@ -364,27 +368,53 @@
             scaleX: 1,
             scaleY: 1,
             borderRadius: 0,
-            duration: 0.46,
+            duration: shellDuration,
             ease: "power3.inOut",
           },
-          shellExpandStart
+          0
         );
-      // 5) Modal content blurs in after expansion.
+
+      if (transitionGhost instanceof HTMLElement) {
+        timeline
+          .to(
+            transitionGhost,
+            {
+              x: ghostToX,
+              y: ghostToY,
+              scaleX: ghostToScaleX,
+              scaleY: ghostToScaleY,
+              borderRadius: 0,
+              duration: shellDuration * 0.9,
+              ease: "power3.inOut",
+            },
+            0
+          )
+          .to(transitionGhost, { opacity: 0, duration: 0.2, ease: "power2.out" }, 0.12);
+      }
+
       if (modalBody) {
-        timeline.to(modalBody, {
-          opacity: 1,
-          filter: "blur(0px)",
-          duration: 0.26,
-          ease: "power2.out",
-        }, shellExpandStart + 0.46);
+        timeline.to(
+          modalBody,
+          {
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: 0.28,
+            ease: "power2.out",
+          },
+          isMobileViewport ? 0.24 : 0.28
+        );
       }
       if (closeButton) {
-        timeline.to(closeButton, {
-          opacity: 1,
-          filter: "blur(0px)",
-          duration: 0.22,
-          ease: "power2.out",
-        }, shellExpandStart + 0.46);
+        timeline.to(
+          closeButton,
+          {
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: 0.22,
+            ease: "power2.out",
+          },
+          isMobileViewport ? 0.24 : 0.28
+        );
       }
     });
 
@@ -402,49 +432,45 @@
       const fadeTargets = activeFadeTargets;
       const canAnimateToCard = activeCaseSource instanceof HTMLElement && activeCaseSource.isConnected;
       const sourceRect = canAnimateToCard ? activeCaseSource.getBoundingClientRect() : null;
-      const sourceCopy =
-        canAnimateToCard && activeCaseSource ? activeCaseSource.querySelector(".work-copy") : null;
-      const sourceMedia =
-        canAnimateToCard && activeCaseSource ? activeCaseSource.querySelector(".work-media") : null;
-      const sourceParts = [sourceCopy, sourceMedia].filter((el) => el instanceof HTMLElement);
 
       modal.classList.add("is-transitioning");
-      if (canAnimateToCard && activeCaseSource) {
-        activeCaseSource.classList.add("is-transition-source");
-      }
 
       const timeline = gsap.timeline({
         defaults: { ease: "power2.inOut" },
         onComplete: () => {
           gsap.set(modalPanel, {
-            clearProps: "opacity,transform,borderRadius,x,y,scaleX,scaleY,transformOrigin",
+            clearProps: "opacity,transform,borderRadius,x,y,scaleX,scaleY,transformOrigin,overflow",
           });
           if (modalBody) gsap.set(modalBody, { clearProps: "opacity,filter" });
           if (closeButton) gsap.set(closeButton, { clearProps: "opacity,filter" });
           gsap.set(modalBackdrop, { clearProps: "opacity" });
           gsap.set(fadeTargets, { clearProps: "opacity,filter" });
-          gsap.set(sourceParts, { clearProps: "opacity,filter,y,scale" });
-          if (activeCaseSource instanceof HTMLElement) {
-            activeCaseSource.classList.remove("is-transition-source");
-          }
           modal.classList.remove("is-transitioning");
           resolve();
         },
       });
 
       if (canAnimateToCard && sourceRect) {
-        const sourceCardShowTime = 0.12;
-        const sourceCopyRevealStart = sourceCardShowTime + 0.05;
-        const sourceMediaRevealStart = sourceCopyRevealStart + 0.1;
+        const panelRect = modalPanel.getBoundingClientRect();
+        const toScaleX = Math.max(0.15, sourceRect.width / Math.max(1, panelRect.width));
+        const toScaleY = Math.max(0.15, sourceRect.height / Math.max(1, panelRect.height));
+        const toX = sourceRect.left - panelRect.left;
+        const toY = sourceRect.top - panelRect.top;
+        const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
+        const shellDuration = isMobileViewport ? 0.44 : 0.5;
+        const sourceRadius =
+          activeCaseSource instanceof HTMLElement
+            ? getComputedStyle(activeCaseSource).borderRadius || "16px"
+            : "16px";
+        gsap.set(modalPanel, { transformOrigin: "top left", overflow: "hidden" });
 
-        // 2) Hide modal content quickly to avoid squished close artifacts.
         if (modalBody) {
           timeline.to(
             modalBody,
             {
               opacity: 0,
               filter: "blur(10px)",
-              duration: 0.08,
+              duration: 0.14,
               ease: "power2.out",
             },
             0
@@ -456,53 +482,26 @@
             {
               opacity: 0,
               filter: "blur(10px)",
-              duration: 0.06,
+              duration: 0.12,
               ease: "power2.out",
             },
             0
           );
         }
-        timeline.to(modalPanel, { opacity: 0, duration: 0.08, ease: "power1.out" }, 0.02);
-        timeline.to(modalBackdrop, { opacity: 0, duration: 0.2, ease: "power1.out" }, 0.02);
-
-        // 3) Destination card reappears as empty shell, then text, then image.
-        if (activeCaseSource && sourceParts.length) {
-          timeline.add(() => {
-            activeCaseSource.classList.remove("is-transition-source");
-            if (sourceCopy instanceof HTMLElement) {
-              gsap.set(sourceCopy, { opacity: 0, filter: "blur(10px)", y: 10 });
-            }
-            if (sourceMedia instanceof HTMLElement) {
-              gsap.set(sourceMedia, { opacity: 0, filter: "blur(10px)", scale: 0.985 });
-            }
-          }, sourceCardShowTime);
-        }
-        if (activeCaseSource && sourceCopy instanceof HTMLElement) {
-          timeline.to(
-            sourceCopy,
-            {
-              opacity: 1,
-              filter: "blur(0px)",
-              y: 0,
-              duration: 0.2,
-              ease: "power2.out",
-            },
-            sourceCopyRevealStart
-          );
-        }
-        if (activeCaseSource && sourceMedia instanceof HTMLElement) {
-          timeline.to(
-            sourceMedia,
-            {
-              opacity: 1,
-              filter: "blur(0px)",
-              scale: 1,
-              duration: 0.22,
-              ease: "power2.out",
-            },
-            sourceMediaRevealStart
-          );
-        }
+        timeline.to(modalBackdrop, { opacity: 0, duration: shellDuration, ease: "power2.out" }, 0);
+        timeline.to(
+          modalPanel,
+          {
+            x: toX,
+            y: toY,
+            scaleX: toScaleX,
+            scaleY: toScaleY,
+            borderRadius: sourceRadius,
+            duration: shellDuration,
+            ease: "power3.inOut",
+          },
+          0
+        );
       } else {
         timeline.to(modalPanel, { opacity: 0, y: 10, duration: 0.22 }, 0);
         timeline.to(modalBackdrop, { opacity: 0, duration: 0.24 }, 0);
@@ -551,11 +550,50 @@
     if (!modal) return;
     if (modalTransitionState !== "idle") return;
 
-    const canAnimateClose = canAnimateModalTransition();
-    if (canAnimateClose) {
+    const canAnimateCloseFade = canAnimateModalTransition();
+    if (canAnimateCloseFade) {
       modalTransitionState = "closing";
-      await animateModalClose();
+      modal.classList.add("is-transitioning");
+      await new Promise((resolve) => {
+        const tl = gsap.timeline({
+          defaults: { ease: "power2.out" },
+          onComplete: () => {
+            if (modalPanel) {
+              gsap.set(modalPanel, {
+                clearProps: "opacity,transform,borderRadius,x,y,scaleX,scaleY,transformOrigin,overflow",
+              });
+            }
+            if (modalBody) gsap.set(modalBody, { clearProps: "opacity,filter" });
+            if (closeButton) gsap.set(closeButton, { clearProps: "opacity,filter" });
+            if (modalBackdrop) gsap.set(modalBackdrop, { clearProps: "opacity" });
+            modal.classList.remove("is-transitioning");
+            resolve();
+          },
+        });
+        if (modalBody) {
+          tl.to(modalBody, { opacity: 0, filter: "blur(6px)", duration: 0.14 }, 0);
+        }
+        if (closeButton) {
+          tl.to(closeButton, { opacity: 0, filter: "blur(6px)", duration: 0.12 }, 0);
+        }
+        if (modalPanel) {
+          tl.to(modalPanel, { opacity: 0, duration: 0.2 }, 0.02);
+        }
+        if (modalBackdrop) {
+          tl.to(modalBackdrop, { opacity: 0, duration: 0.22 }, 0);
+        }
+      });
       modalTransitionState = "idle";
+    } else {
+      if (modalPanel) {
+        gsap.set(modalPanel, {
+          clearProps: "opacity,transform,borderRadius,x,y,scaleX,scaleY,transformOrigin,overflow",
+        });
+      }
+      if (modalBody) gsap.set(modalBody, { clearProps: "opacity,filter" });
+      if (closeButton) gsap.set(closeButton, { clearProps: "opacity,filter" });
+      if (modalBackdrop) gsap.set(modalBackdrop, { clearProps: "opacity" });
+      modal.classList.remove("is-transitioning");
     }
 
     modal.classList.remove("is-open");
@@ -878,6 +916,7 @@
 
   // Motion guard: skip enhancements when GSAP is unavailable.
   if (typeof gsap === "undefined") {
+    revealBootPage();
     if (bootBlack instanceof HTMLElement) {
       bootBlack.style.display = "none";
     }
@@ -898,6 +937,7 @@
       const { reduce, isDesktop, isPointerFine } = context.conditions;
       const heroContainer = document.querySelector(".site-header .container");
       if (reduce) {
+        revealBootPage();
         if (bootBlack instanceof HTMLElement) {
           gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
         }
@@ -1166,6 +1206,7 @@
       const heroIntroChars = heroNameChars.filter(
         (charEl) => !charEl.classList.contains("name-char--space")
       );
+      const nickname = document.querySelector(".nickname");
 
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
       let introStartAt = 0;
@@ -1175,15 +1216,17 @@
           heroTl.set(bootBlack, { autoAlpha: 0, display: "none" }, 0);
         }
         introStartAt = ">";
-      } else if (bootBlack instanceof HTMLElement) {
+      } else if (bootBlack instanceof HTMLElement && bootStartsHidden) {
         heroTl
           .set(bootBlack, { autoAlpha: 1, display: "block" }, 0)
           .to(bootBlack, { autoAlpha: 1, duration: 0.24, ease: "none" }, 0)
           .to(bootBlack, { autoAlpha: 0, duration: 0.62, ease: "power2.out" }, 0.24)
           .set(bootBlack, { display: "none" }, 0.86);
         introStartAt = 0.86;
+      } else if (bootBlack instanceof HTMLElement) {
+        gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
-      const shouldAnimateNameChars = !hasIntro;
+      const shouldAnimateNameChars = !hasIntro && bootStartsHidden;
       if (shouldAnimateNameChars) {
         const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
         heroTl.set(
@@ -1254,17 +1297,39 @@
         );
         heroTl.addLabel("copyIn", "intro+=0.02");
       }
+      if (nickname instanceof HTMLElement && bootStartsHidden) {
+        heroTl.set(nickname, { opacity: 0, y: 8, filter: "blur(6px)" }, 0);
+        heroTl.to(
+          nickname,
+          { opacity: 0.9, y: 0, filter: "blur(0px)", duration: 0.42, ease: "power2.out" },
+          "copyIn+=0.04"
+        );
+      }
+      heroTl.add(() => {
+        revealBootPage();
+      }, "intro");
 
-      heroTl
-        .from(
-          ".rule",
-          { scaleX: 0, opacity: 0, filter: "blur(6px)", transformOrigin: "left center", duration: 0.6 },
+      const heroRule = document.querySelector(".rule");
+      if (heroRule instanceof HTMLElement && bootStartsHidden) {
+        const finalRuleWidth = Math.max(1, Math.round(heroRule.getBoundingClientRect().width));
+        heroTl.fromTo(
+          heroRule,
+          { width: 0, opacity: 0, filter: "blur(6px)" },
+          {
+            width: finalRuleWidth,
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: 0.62,
+            ease: "power2.out",
+            clearProps: "width,opacity,filter",
+          },
           "copyIn+=0.2"
-        )
-        .addLabel("settle");
+        );
+      }
+      heroTl.addLabel("settle");
 
       const tagline = document.querySelector(".tagline");
-      if (tagline instanceof HTMLElement) {
+      if (tagline instanceof HTMLElement && bootStartsHidden) {
         if (!tagline.dataset.wordsReady) {
           const raw = (tagline.textContent || "").trim().replace(/\s+/g, " ");
           const words = raw.split(" ").filter(Boolean);
@@ -1344,11 +1409,13 @@
           );
         }
       } else {
-        heroTl.from(
+        if (bootStartsHidden) {
+          heroTl.from(
           ".tagline",
           { y: 18, opacity: 0, filter: "blur(8px)", duration: 0.7 },
           "copyIn+=0.1"
-        );
+          );
+        }
       }
 
       const cleanupHeroPointer = null;
@@ -1402,6 +1469,33 @@
       }
 
       // Staggered reveal for each work card on scroll.
+      const workTitle = document.querySelector("#work-title");
+      if (workTitle instanceof HTMLElement) {
+        gsap.set(workTitle, { "--h2-rule-scale": 0, opacity: 0, y: 16, filter: "blur(8px)" });
+        gsap
+          .timeline({
+            defaults: { ease: "power3.out" },
+            scrollTrigger: {
+              trigger: workTitle,
+              start: "top 86%",
+              toggleActions: "play none none none",
+            },
+          })
+          .to(workTitle, {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 0.56,
+            letterSpacing: "0.12em",
+            clearProps: "letterSpacing",
+          })
+          .to(
+            workTitle,
+            { "--h2-rule-scale": 1, duration: 0.62, ease: "power2.out" },
+            0.06
+          );
+      }
+
       gsap.utils.toArray(".work-item").forEach((item) => {
         gsap.from(item, {
           y: 28,
@@ -1412,7 +1506,7 @@
           scrollTrigger: {
             trigger: item,
             start: "top 80%",
-            toggleActions: "play none none reverse",
+            toggleActions: "play none none none",
           },
         });
       });
@@ -1426,7 +1520,7 @@
         scrollTrigger: {
           trigger: ".about-bleed",
           start: "top 75%",
-          toggleActions: "play none none reverse",
+          toggleActions: "play none none none",
         },
       });
 
@@ -1439,7 +1533,7 @@
         scrollTrigger: {
           trigger: ".about-layout",
           start: "top 80%",
-          toggleActions: "play none none reverse",
+          toggleActions: "play none none none",
         },
       });
 
@@ -1456,13 +1550,14 @@
           scrollTrigger: {
             trigger: footer,
             start: "top 88%",
-            toggleActions: "play none none reverse",
+            toggleActions: "play none none none",
           },
         });
       }
 
       return () => {
         cleanupIntro();
+        revealBootPage();
         if (bootBlack instanceof HTMLElement) {
           gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
         }
