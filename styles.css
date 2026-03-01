@@ -34,6 +34,7 @@
   --c-muted: rgba(255, 252, 225, 0.78);
   --c-accent: #ffb43b;
   --radius: 16px;
+  --boot-failsafe-delay: 8s;
 }
 
 /* Base: predictable box model */
@@ -112,6 +113,8 @@ body.intro-scroll-lock {
   z-index: 5200;
   background: #000;
   pointer-events: none;
+  /* Fail-safe: if JS never runs, don't leave users on a permanent black screen. */
+  animation: boot-black-failsafe 0s linear var(--boot-failsafe-delay) forwards;
 }
 
 .intro-columns {
@@ -273,6 +276,22 @@ body.intro-scroll-lock {
 .page.boot-hidden {
   opacity: 0;
   visibility: hidden;
+  /* Fail-safe reveal when runtime scripts fail before clearing boot-hidden. */
+  animation: page-boot-failsafe 0s linear var(--boot-failsafe-delay) forwards;
+}
+
+@keyframes boot-black-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes page-boot-failsafe {
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .container {

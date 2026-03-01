@@ -36,7 +36,11 @@
     history.scrollRestoration = "manual";
   }
   const forceScrollTop = () => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    } catch {
+      window.scrollTo(0, 0);
+    }
   };
   window.addEventListener("load", forceScrollTop, { once: true });
   window.addEventListener("pageshow", forceScrollTop);
@@ -82,6 +86,17 @@
     pageRoot.style.opacity = "";
     pageRoot.style.visibility = "";
   };
+
+  if (bootStartsHidden) {
+    // Runtime fail-safe for mobile browsers/CDN hiccups: never stay black forever.
+    window.setTimeout(() => {
+      revealBootPage();
+      setIntroScrollLock(false);
+      if (bootBlack instanceof HTMLElement) {
+        bootBlack.style.display = "none";
+      }
+    }, 9000);
+  }
 
   const isResponsiveRaster = (pathname) =>
     /\.(png|jpe?g)$/i.test(pathname) && !/-640\.(png|jpe?g)$/i.test(pathname);
