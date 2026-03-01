@@ -71,6 +71,10 @@ body {
   line-height: 1.45;
 }
 
+body.intro-scroll-lock {
+  overflow: hidden;
+}
+
 .boot-black {
   position: fixed;
   inset: 0;

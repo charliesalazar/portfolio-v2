@@ -32,6 +32,21 @@
   const bootBlack = document.querySelector(".boot-black");
   const pageRoot = document.querySelector(".page");
   const bootStartsHidden = pageRoot instanceof HTMLElement && pageRoot.classList.contains("boot-hidden");
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
+  const forceScrollTop = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  };
+  window.addEventListener("load", forceScrollTop, { once: true });
+  window.addEventListener("pageshow", forceScrollTop);
+  const setIntroScrollLock = (isLocked) => {
+    document.body.classList.toggle("intro-scroll-lock", Boolean(isLocked));
+  };
+  if (bootStartsHidden) {
+    setIntroScrollLock(true);
+    window.scrollTo(0, 0);
+  }
   const cursor = document.querySelector(".cursor");
   const introOverlay = document.querySelector(".intro-columns");
   const introPov = introOverlay ? introOverlay.querySelector(".intro-pov") : null;
@@ -55,6 +70,7 @@
   let activeCaseSource = null;
   let modalTransitionState = "idle";
   let activeFadeTargets = [];
+  let cleanupModalMediaReveal = () => {};
   let syncCursorSuppression = () => {};
   const revealBootPage = () => {
     if (!(pageRoot instanceof HTMLElement)) return;
@@ -190,6 +206,7 @@
           ></iframe>
         </div>
       `;
+      primeModalMediaRevealState();
       return true;
     }
 
@@ -198,6 +215,7 @@
       if (externalMarkup) {
         modalBody.innerHTML = externalMarkup;
         hydrateGalleryHoverCaptions(modalBody);
+        primeModalMediaRevealState();
         syncModalLabel(key);
         return true;
       }
@@ -213,6 +231,7 @@
         ></iframe>
       </div>
     `;
+    primeModalMediaRevealState();
     syncModalLabel(key);
     return true;
   };
@@ -223,6 +242,92 @@
     modal &&
     modalPanel &&
     modalBackdrop;
+
+  const getModalMediaTargets = () => {
+    if (!modalBody) return [];
+    return Array.from(modalBody.querySelectorAll(".case-media img, .case-inline-frame")).filter(
+      (el) => el instanceof HTMLElement
+    );
+  };
+
+  const canUseModalMediaScrollReveal = () =>
+    typeof gsap !== "undefined" &&
+    !prefersReducedMotion &&
+    typeof IntersectionObserver !== "undefined" &&
+    modalPanel instanceof HTMLElement;
+
+  const primeModalMediaRevealState = () => {
+    const mediaTargets = getModalMediaTargets();
+    if (!mediaTargets.length || typeof gsap === "undefined") return;
+    gsap.killTweensOf(mediaTargets);
+    if (!canUseModalMediaScrollReveal()) {
+      gsap.set(mediaTargets, { clearProps: "opacity,filter,transform" });
+      return;
+    }
+    // Prime hidden state before modal is shown to prevent first-frame flash.
+    gsap.set(mediaTargets, { opacity: 0, filter: "blur(12px)", y: 14 });
+  };
+
+  const setupModalMediaScrollReveal = () => {
+    cleanupModalMediaReveal();
+    const mediaTargets = getModalMediaTargets();
+    if (!mediaTargets.length) return;
+    const clearMediaProps = () => {
+      if (typeof gsap === "undefined") return;
+      gsap.killTweensOf(mediaTargets);
+      gsap.set(mediaTargets, { clearProps: "opacity,filter,transform" });
+    };
+
+    if (!canUseModalMediaScrollReveal()) {
+      clearMediaProps();
+      cleanupModalMediaReveal = () => {};
+      return;
+    }
+
+    const revealedNodes = new WeakSet();
+    let observer = null;
+    const revealNode = (node, delay = 0) => {
+      if (!(node instanceof HTMLElement) || revealedNodes.has(node)) return;
+      revealedNodes.add(node);
+      gsap.to(node, {
+        opacity: 1,
+        filter: "blur(0px)",
+        y: 0,
+        duration: 0.56,
+        ease: "power2.out",
+        delay,
+        clearProps: "opacity,filter,transform",
+      });
+      if (observer) observer.unobserve(node);
+    };
+
+    gsap.killTweensOf(mediaTargets);
+
+    observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort(
+            (a, b) =>
+              a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top
+          );
+        visible.forEach((entry, index) => {
+          revealNode(entry.target, index * 0.05);
+        });
+      },
+      {
+        root: modalPanel,
+        threshold: 0.2,
+        rootMargin: "0px 0px -8% 0px",
+      }
+    );
+
+    mediaTargets.forEach((node) => observer.observe(node));
+    cleanupModalMediaReveal = () => {
+      observer.disconnect();
+      clearMediaProps();
+    };
+  };
 
   const introRots = [
     { ry: 270, a: 0.5 },
@@ -511,6 +616,7 @@
   const openModal = async (key, sourceEl = null) => {
     if (!modal || !modalBody) return false;
     if (modalTransitionState !== "idle") return false;
+    cleanupModalMediaReveal();
     modalBody.innerHTML = `
       <div class="case-flow">
         <div class="case-text-wrap">
@@ -538,6 +644,8 @@
       modalTransitionState = "idle";
     }
 
+    setupModalMediaScrollReveal();
+
     if (closeButton) closeButton.focus();
     // Keep URL in sync so deep links and back/forward navigation work.
     if (location.hash !== `#case-${key}`) {
@@ -549,6 +657,7 @@
   const closeModal = async () => {
     if (!modal) return;
     if (modalTransitionState !== "idle") return;
+    cleanupModalMediaReveal();
 
     const canAnimateCloseFade = canAnimateModalTransition();
     if (canAnimateCloseFade) {
@@ -917,6 +1026,7 @@
   // Motion guard: skip enhancements when GSAP is unavailable.
   if (typeof gsap === "undefined") {
     revealBootPage();
+    setIntroScrollLock(false);
     if (bootBlack instanceof HTMLElement) {
       bootBlack.style.display = "none";
     }
@@ -938,6 +1048,7 @@
       const heroContainer = document.querySelector(".site-header .container");
       if (reduce) {
         revealBootPage();
+        setIntroScrollLock(false);
         if (bootBlack instanceof HTMLElement) {
           gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
         }
@@ -1297,6 +1408,7 @@
         );
         heroTl.addLabel("copyIn", "intro+=0.02");
       }
+      let unlockAt = "copyIn+=0.02";
       if (nickname instanceof HTMLElement && bootStartsHidden) {
         heroTl.set(nickname, { opacity: 0, y: 8, filter: "blur(6px)" }, 0);
         heroTl.to(
@@ -1304,6 +1416,7 @@
           { opacity: 0.9, y: 0, filter: "blur(0px)", duration: 0.42, ease: "power2.out" },
           "copyIn+=0.04"
         );
+        unlockAt = "copyIn+=0.46";
       }
       heroTl.add(() => {
         revealBootPage();
@@ -1327,6 +1440,11 @@
         );
       }
       heroTl.addLabel("settle");
+      if (bootStartsHidden) {
+        heroTl.add(() => {
+          setIntroScrollLock(false);
+        }, unlockAt);
+      }
 
       const tagline = document.querySelector(".tagline");
       if (tagline instanceof HTMLElement && bootStartsHidden) {
@@ -1468,20 +1586,21 @@
         };
       }
 
-      // Staggered reveal for each work card on scroll.
-      const workTitle = document.querySelector("#work-title");
-      if (workTitle instanceof HTMLElement) {
-        gsap.set(workTitle, { "--h2-rule-scale": 0, opacity: 0, y: 16, filter: "blur(8px)" });
+      // Section heading reveal (label + rule draw) on scroll.
+      ["#work-title", "#about-title"].forEach((selector) => {
+        const sectionTitle = document.querySelector(selector);
+        if (!(sectionTitle instanceof HTMLElement)) return;
+        gsap.set(sectionTitle, { "--h2-rule-scale": 0, opacity: 0, y: 16, filter: "blur(8px)" });
         gsap
           .timeline({
             defaults: { ease: "power3.out" },
             scrollTrigger: {
-              trigger: workTitle,
+              trigger: sectionTitle,
               start: "top 86%",
               toggleActions: "play none none none",
             },
           })
-          .to(workTitle, {
+          .to(sectionTitle, {
             opacity: 1,
             y: 0,
             filter: "blur(0px)",
@@ -1490,11 +1609,11 @@
             clearProps: "letterSpacing",
           })
           .to(
-            workTitle,
+            sectionTitle,
             { "--h2-rule-scale": 1, duration: 0.62, ease: "power2.out" },
             0.06
           );
-      }
+      });
 
       gsap.utils.toArray(".work-item").forEach((item) => {
         gsap.from(item, {
@@ -1558,6 +1677,7 @@
       return () => {
         cleanupIntro();
         revealBootPage();
+        setIntroScrollLock(false);
         if (bootBlack instanceof HTMLElement) {
           gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
         }
