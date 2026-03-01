@@ -1083,19 +1083,10 @@
       isPointerFine: "(pointer: fine)",
     },
     (context) => {
-      const { reduce, isDesktop, isPointerFine } = context.conditions;
+      const { isDesktop, isPointerFine } = context.conditions;
       const heroContainer = document.querySelector(".site-header .container");
-      if (reduce) {
-        revealBootPage();
-        setIntroScrollLock(false);
-        if (bootBlack instanceof HTMLElement) {
-          gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
-        }
-        if (heroContainer instanceof HTMLElement) {
-          gsap.set(heroContainer, { clearProps: "opacity" });
-        }
-        return;
-      }
+      // Keep the hero intro deterministic across mobile Safari variants.
+      // Some iPhone sessions report reduced-motion unexpectedly, which previously skipped the intro.
 
       const { rows: introRows, dice: introDice, cubes: introCubes } = buildIntroColumns();
       const hasIntro =
