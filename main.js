@@ -339,6 +339,23 @@
 
     gsap.killTweensOf(mediaTargets);
 
+    const revealVisibleNow = () => {
+      if (!(modalPanel instanceof HTMLElement)) return 0;
+      const rootRect = modalPanel.getBoundingClientRect();
+      const visibleNow = mediaTargets.filter((node) => {
+        if (!(node instanceof HTMLElement) || revealedNodes.has(node)) return false;
+        const rect = node.getBoundingClientRect();
+        const nodeHeight = Math.max(1, rect.height);
+        const overlapTop = Math.max(rect.top, rootRect.top);
+        const overlapBottom = Math.min(rect.bottom, rootRect.bottom);
+        const overlap = Math.max(0, overlapBottom - overlapTop);
+        // Treat nodes with at least 8% overlap as visible on first paint.
+        return overlap / nodeHeight >= 0.08;
+      });
+      visibleNow.forEach((node, index) => revealNode(node, index * 0.04));
+      return visibleNow.length;
+    };
+
     observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -353,12 +370,20 @@
       },
       {
         root: modalPanel,
-        threshold: 0.2,
+        threshold: 0.08,
         rootMargin: "0px 0px -8% 0px",
       }
     );
 
     mediaTargets.forEach((node) => observer.observe(node));
+    // On some mobile browsers, the first observer callback can be delayed.
+    // Force-reveal in-view nodes so the first image is never stuck hidden.
+    requestAnimationFrame(() => {
+      const revealedCount = revealVisibleNow();
+      if (revealedCount === 0 && mediaTargets[0] instanceof HTMLElement) {
+        revealNode(mediaTargets[0], 0);
+      }
+    });
     cleanupModalMediaReveal = () => {
       observer.disconnect();
       clearMediaProps();
