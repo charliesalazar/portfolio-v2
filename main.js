@@ -300,8 +300,14 @@
       gsap.set(mediaTargets, { clearProps: "opacity,filter,transform" });
       return;
     }
-    // Prime hidden state before modal is shown to prevent first-frame flash.
-    gsap.set(mediaTargets, { opacity: 0, filter: "blur(12px)", y: 14 });
+    // Keep first media visible on open; defer reveal treatment to the rest.
+    const [firstTarget, ...deferredTargets] = mediaTargets;
+    if (firstTarget instanceof HTMLElement) {
+      gsap.set(firstTarget, { clearProps: "opacity,filter,transform" });
+    }
+    if (deferredTargets.length) {
+      gsap.set(deferredTargets, { opacity: 0, filter: "blur(12px)", y: 14 });
+    }
   };
 
   const setupModalMediaScrollReveal = () => {
@@ -322,6 +328,11 @@
 
     const revealedNodes = new WeakSet();
     let observer = null;
+    const [firstTarget, ...observerTargets] = mediaTargets;
+    if (firstTarget instanceof HTMLElement) {
+      gsap.set(firstTarget, { clearProps: "opacity,filter,transform" });
+      revealedNodes.add(firstTarget);
+    }
     const revealNode = (node, delay = 0) => {
       if (!(node instanceof HTMLElement) || revealedNodes.has(node)) return;
       revealedNodes.add(node);
@@ -342,7 +353,7 @@
     const revealVisibleNow = () => {
       if (!(modalPanel instanceof HTMLElement)) return 0;
       const rootRect = modalPanel.getBoundingClientRect();
-      const visibleNow = mediaTargets.filter((node) => {
+      const visibleNow = observerTargets.filter((node) => {
         if (!(node instanceof HTMLElement) || revealedNodes.has(node)) return false;
         const rect = node.getBoundingClientRect();
         const nodeHeight = Math.max(1, rect.height);
@@ -375,13 +386,13 @@
       }
     );
 
-    mediaTargets.forEach((node) => observer.observe(node));
+    observerTargets.forEach((node) => observer.observe(node));
     // On some mobile browsers, the first observer callback can be delayed.
     // Force-reveal in-view nodes so the first image is never stuck hidden.
     requestAnimationFrame(() => {
       const revealedCount = revealVisibleNow();
-      if (revealedCount === 0 && mediaTargets[0] instanceof HTMLElement) {
-        revealNode(mediaTargets[0], 0);
+      if (revealedCount === 0 && observerTargets[0] instanceof HTMLElement) {
+        revealNode(observerTargets[0], 0);
       }
     });
     cleanupModalMediaReveal = () => {
@@ -1407,8 +1418,9 @@
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
-      const shouldAnimateNameChars = !hasIntro && shouldRunBootIntro;
+      const shouldAnimateNameChars = !hasIntro && bootStartsHidden;
       if (shouldAnimateNameChars) {
+        const isLateBootRoll = !shouldRunBootIntro;
         const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
         heroTl.set(
           heroNameLines,
@@ -1418,23 +1430,38 @@
           },
           0
         );
-        heroTl.set(
-          heroIntroChars,
-          {
-            opacity: 1,
-            rotationX: -96,
-            yPercent: 122,
-            z: -96,
-            filter: "blur(7px)",
-            transformOrigin: `50% 50% -${tubeDepth}px`,
-          },
-          0
-        );
+        if (shouldRunBootIntro) {
+          heroTl.set(
+            heroIntroChars,
+            {
+              opacity: 1,
+              rotationX: -96,
+              yPercent: 122,
+              z: -96,
+              filter: "blur(7px)",
+              transformOrigin: `50% 50% -${tubeDepth}px`,
+            },
+            0
+          );
+        } else {
+          heroTl.set(
+            heroIntroChars,
+            {
+              opacity: 1,
+              rotationX: 0,
+              yPercent: 0,
+              z: 0,
+              filter: "blur(0px)",
+              transformOrigin: `50% 50% -${tubeDepth}px`,
+            },
+            0
+          );
+        }
         heroTl.addLabel("intro", introStartAt);
-        const nameRollSpinDuration = 1.2;
-        const nameRollSettleDuration = 0.56;
-        const nameRollStagger = 0.08;
-        const nameRollStart = 0.14;
+        const nameRollSpinDuration = isLateBootRoll ? 0.84 : 1.2;
+        const nameRollSettleDuration = isLateBootRoll ? 0.36 : 0.56;
+        const nameRollStagger = isLateBootRoll ? 0.05 : 0.08;
+        const nameRollStart = isLateBootRoll ? 0.02 : 0.14;
         const nameRollTotal =
           nameRollSpinDuration +
           nameRollSettleDuration +
@@ -1443,13 +1470,13 @@
         heroTl.to(
           heroIntroChars,
           {
-            rotationX: 630,
+            rotationX: isLateBootRoll ? 680 : 630,
             yPercent: 0,
             z: 0,
             opacity: 1,
-            filter: "blur(1px)",
+            filter: isLateBootRoll ? "blur(0px)" : "blur(1px)",
             duration: nameRollSpinDuration,
-            ease: "none",
+            ease: isLateBootRoll ? "power1.inOut" : "none",
             stagger: { each: nameRollStagger, from: "start" },
             immediateRender: false,
           },
