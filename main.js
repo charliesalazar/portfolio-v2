@@ -1369,10 +1369,8 @@
       } else if (bootBlack instanceof HTMLElement && bootStartsHidden) {
         heroTl
           .set(bootBlack, { autoAlpha: 1, display: "block" }, 0)
-          .to(bootBlack, { autoAlpha: 1, duration: 0.24, ease: "none" }, 0)
-          .to(bootBlack, { autoAlpha: 0, duration: 0.62, ease: "power2.out" }, 0.24)
-          .set(bootBlack, { display: "none" }, 0.86);
-        introStartAt = 0.86;
+          .set(bootBlack, { autoAlpha: 0, display: "none" }, 0.2);
+        introStartAt = 0.2;
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
