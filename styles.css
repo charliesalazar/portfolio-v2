@@ -113,10 +113,7 @@ body.intro-scroll-lock {
   z-index: 5200;
   background: #000;
   pointer-events: none;
-}
-
-/* CSS failsafes should only run when JS is unavailable. */
-html.no-js .boot-black {
+  /* Fail-safe: if JS never runs, don't leave users on a permanent black screen. */
   animation: boot-black-failsafe 0s linear var(--boot-failsafe-delay) forwards;
 }
 
@@ -279,10 +276,7 @@ html.no-js .boot-black {
 .page.boot-hidden {
   opacity: 0;
   visibility: hidden;
-}
-
-/* Prevent timer-based reveal races when JS boot intro is active. */
-html.no-js .page.boot-hidden {
+  /* Fail-safe reveal when runtime scripts fail before clearing boot-hidden. */
   animation: page-boot-failsafe 0s linear var(--boot-failsafe-delay) forwards;
 }
 
