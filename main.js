@@ -1515,9 +1515,9 @@
       const heroRule = document.querySelector(".rule");
       if (heroRule instanceof HTMLElement && shouldRunBootIntro) {
         const finalRuleWidth = Math.max(1, Math.round(heroRule.getBoundingClientRect().width));
-        heroTl.fromTo(
+        heroTl.set(heroRule, { width: 0, opacity: 0 }, 0);
+        heroTl.to(
           heroRule,
-          { width: 0, opacity: 0 },
           {
             width: finalRuleWidth,
             opacity: 1,
@@ -1559,10 +1559,10 @@
         );
         const slightlyWord = tagline.querySelector(".tagline-word--slightly");
         const shorterWord = tagline.querySelector(".tagline-word--shorter");
+        heroTl.set(normalTaglineWords, { y: 12, opacity: 0 }, 0);
 
-        heroTl.fromTo(
+        heroTl.to(
           normalTaglineWords,
-          { y: 12, opacity: 0 },
           {
             y: 0,
             opacity: 1,
@@ -1585,9 +1585,9 @@
             });
           }
           const slightlyChars = gsap.utils.toArray(".tagline-word--slightly .tagline-char");
-          heroTl.fromTo(
+          heroTl.set(slightlyChars, { y: 8, opacity: 0 }, 0);
+          heroTl.to(
             slightlyChars,
-            { y: 8, opacity: 0 },
             {
               y: 0,
               opacity: 1,
@@ -1600,9 +1600,9 @@
         }
 
         if (shorterWord instanceof HTMLElement) {
-          heroTl.fromTo(
+          heroTl.set(shorterWord, { y: 8, opacity: 0 }, 0);
+          heroTl.to(
             shorterWord,
-            { y: 8, opacity: 0 },
             {
               y: 0,
               opacity: 1,
