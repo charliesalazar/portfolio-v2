@@ -1529,24 +1529,23 @@
 
       const tagline = document.querySelector(".tagline");
       if (tagline instanceof HTMLElement && !tagline.dataset.introPlayed) {
-        if (shouldRunBootIntro) {
-          heroTl.set(tagline, { opacity: 0, y: 20, filter: "blur(8px)" }, 0);
-        }
-        heroTl.to(
+        heroTl.fromTo(
           tagline,
+          { opacity: 0, y: 24, filter: "blur(12px)" },
           {
             y: 0,
             opacity: 1,
             filter: "blur(0px)",
-            duration: 0.72,
+            duration: 1.02,
             ease: "power3.out",
             clearProps: "filter",
+            immediateRender: false,
           },
-          "copyIn+=0.08"
+          "copyIn+=0.14"
         );
         heroTl.add(() => {
           tagline.dataset.introPlayed = "true";
-        }, "copyIn+=0.84");
+        }, "copyIn+=1.18");
       }
 
       const cleanupHeroPointer = null;
