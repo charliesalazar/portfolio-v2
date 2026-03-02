@@ -1537,81 +1537,19 @@
 
       const tagline = document.querySelector(".tagline");
       if (tagline instanceof HTMLElement && shouldRunBootIntro) {
-        if (!tagline.dataset.wordsReady) {
-          const raw = (tagline.textContent || "").trim().replace(/\s+/g, " ");
-          const words = raw.split(" ").filter(Boolean);
-          tagline.textContent = "";
-          words.forEach((word, index) => {
-            const span = document.createElement("span");
-            span.className = "tagline-word";
-            const normalized = word.toLowerCase().replace(/[^\w]/g, "");
-            if (normalized === "slightly") span.classList.add("tagline-word--slightly");
-            if (normalized === "shorter") span.classList.add("tagline-word--shorter");
-            span.textContent = word;
-            tagline.appendChild(span);
-            if (index < words.length - 1) tagline.appendChild(document.createTextNode(" "));
-          });
-          tagline.dataset.wordsReady = "true";
-        }
-
-        const normalTaglineWords = gsap.utils.toArray(
-          ".tagline .tagline-word:not(.tagline-word--slightly):not(.tagline-word--shorter)"
-        );
-        const slightlyWord = tagline.querySelector(".tagline-word--slightly");
-        const shorterWord = tagline.querySelector(".tagline-word--shorter");
-        heroTl.set(normalTaglineWords, { y: 12, opacity: 0 }, 0);
-
+        heroTl.set(tagline, { y: 18, opacity: 0, filter: "blur(8px)" }, 0);
         heroTl.to(
-          normalTaglineWords,
+          tagline,
           {
             y: 0,
             opacity: 1,
-            duration: 0.42,
-            stagger: 0.085,
-            ease: "power2.out",
+            filter: "blur(0px)",
+            duration: 0.72,
+            ease: "power3.out",
+            clearProps: "filter",
           },
-          "copyIn+=0.08"
+          "copyIn+=0.1"
         );
-
-        if (slightlyWord instanceof HTMLElement) {
-          if (!slightlyWord.querySelector(".tagline-char")) {
-            const raw = (slightlyWord.textContent || "").trim();
-            slightlyWord.textContent = "";
-            Array.from(raw).forEach((char) => {
-              const span = document.createElement("span");
-              span.className = "tagline-char";
-              span.textContent = char;
-              slightlyWord.appendChild(span);
-            });
-          }
-          const slightlyChars = gsap.utils.toArray(".tagline-word--slightly .tagline-char");
-          heroTl.set(slightlyChars, { y: 8, opacity: 0 }, 0);
-          heroTl.to(
-            slightlyChars,
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.24,
-              stagger: 0.095,
-              ease: "power2.out",
-            },
-            ">+0.06"
-          );
-        }
-
-        if (shorterWord instanceof HTMLElement) {
-          heroTl.set(shorterWord, { y: 8, opacity: 0 }, 0);
-          heroTl.to(
-            shorterWord,
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.36,
-              ease: "power2.out",
-            },
-            ">+0.12"
-          );
-        }
       } else {
         if (shouldRunBootIntro) {
           heroTl.from(
