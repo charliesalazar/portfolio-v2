@@ -1542,7 +1542,7 @@
         }, unlockAt);
         heroTl.add(() => {
           setIntroBooting(false);
-        }, "copyIn+=0.9");
+        }, "copyIn");
       } else {
         setIntroBooting(false);
       }
