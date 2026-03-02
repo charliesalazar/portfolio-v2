@@ -47,8 +47,12 @@
   const setIntroScrollLock = (isLocked) => {
     document.body.classList.toggle("intro-scroll-lock", Boolean(isLocked));
   };
+  const setIntroBooting = (isBooting) => {
+    document.body.classList.toggle("booting-intro", Boolean(isBooting));
+  };
   if (bootStartsHidden) {
     setIntroScrollLock(true);
+    setIntroBooting(true);
     window.scrollTo(0, 0);
   }
   const cursor = document.querySelector(".cursor");
@@ -115,6 +119,7 @@
       if (isPageVisiblyBooted()) {
         revealBootPage();
         setIntroScrollLock(false);
+        setIntroBooting(false);
         if (bootBlack instanceof HTMLElement) {
           bootBlack.style.display = "none";
         }
@@ -123,6 +128,7 @@
       revealBootPage();
       startCssHeroFallback();
       setIntroScrollLock(false);
+      setIntroBooting(false);
       if (bootBlack instanceof HTMLElement) {
         bootBlack.style.display = "none";
       }
@@ -1114,6 +1120,7 @@
     revealBootPage();
     startCssHeroFallback();
     setIntroScrollLock(false);
+    setIntroBooting(false);
     if (bootBlack instanceof HTMLElement) {
       bootBlack.style.display = "none";
     }
@@ -1533,6 +1540,11 @@
         heroTl.add(() => {
           setIntroScrollLock(false);
         }, unlockAt);
+        heroTl.add(() => {
+          setIntroBooting(false);
+        }, "copyIn+=0.9");
+      } else {
+        setIntroBooting(false);
       }
 
       const tagline = document.querySelector(".tagline");
@@ -1704,6 +1716,7 @@
         cleanupIntro();
         revealBootPage();
         setIntroScrollLock(false);
+        setIntroBooting(false);
         if (bootBlack instanceof HTMLElement) {
           gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
         }

@@ -107,6 +107,12 @@ body.intro-scroll-lock {
   overflow: hidden;
 }
 
+body.booting-intro .nickname,
+body.booting-intro .tagline,
+body.booting-intro .rule {
+  opacity: 0 !important;
+}
+
 .boot-black {
   position: fixed;
   inset: 0;
