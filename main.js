@@ -1384,7 +1384,7 @@
       // Split hero name into per-letter spans for a GSAP-style character reveal.
       const heroNameLines = Array.from(document.querySelectorAll(".name-line"));
       let heroNameChars = Array.from(document.querySelectorAll(".name-char"));
-      if (!heroNameChars.length) {
+      if (!heroNameChars.length && shouldRunBootIntro) {
         heroNameLines.forEach((line) => {
           if (!(line instanceof HTMLElement)) return;
           const raw = line.textContent || "";
@@ -1408,6 +1408,10 @@
       const heroIntroChars = heroNameChars.filter(
         (charEl) => !charEl.classList.contains("name-char--space")
       );
+      if (!shouldRunBootIntro) {
+        // Late boot: keep hero stable and avoid reapplying intro start states on visible text.
+        gsap.set(heroIntroChars, { clearProps: "transform,opacity,filter" });
+      }
       const nickname = document.querySelector(".nickname");
 
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out", immediateRender: false } });
