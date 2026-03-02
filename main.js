@@ -299,6 +299,9 @@
     modal &&
     modalPanel &&
     modalBackdrop;
+  const useSimpleMobileModalTransition = () =>
+    window.matchMedia("(max-width: 768px)").matches ||
+    window.matchMedia("(pointer: coarse)").matches;
 
   const getModalMediaTargets = () => {
     if (!modalBody) return [];
@@ -465,7 +468,59 @@
         resolve();
         return;
       }
-      if (!(sourceEl instanceof HTMLElement) || !modalPanel || !modalBackdrop) {
+      if (!modalPanel || !modalBackdrop) {
+        resolve();
+        return;
+      }
+      const isSimpleMobile = useSimpleMobileModalTransition();
+      if (isSimpleMobile) {
+        modal.classList.add("is-transitioning");
+        gsap.set(modalBackdrop, { opacity: 0 });
+        gsap.set(modalPanel, { opacity: 0, y: 16 });
+        if (modalBody) gsap.set(modalBody, { opacity: 0, filter: "blur(8px)" });
+        if (closeButton) gsap.set(closeButton, { opacity: 0, filter: "blur(8px)" });
+
+        const timeline = gsap.timeline({
+          defaults: { ease: "power2.out" },
+          onComplete: () => {
+            gsap.set(modalPanel, { clearProps: "opacity,transform,y" });
+            gsap.set(modalBackdrop, { clearProps: "opacity" });
+            if (modalBody) gsap.set(modalBody, { clearProps: "opacity,filter" });
+            if (closeButton) gsap.set(closeButton, { clearProps: "opacity,filter" });
+            modal.classList.remove("is-transitioning");
+            resolve();
+          },
+        });
+        timeline
+          .to(modalBackdrop, { opacity: 1, duration: 0.2 }, 0)
+          .to(modalPanel, { opacity: 1, y: 0, duration: 0.28 }, 0.03);
+        if (modalBody) {
+          timeline.to(
+            modalBody,
+            {
+              opacity: 1,
+              filter: "blur(0px)",
+              duration: 0.24,
+              clearProps: "filter",
+            },
+            0.12
+          );
+        }
+        if (closeButton) {
+          timeline.to(
+            closeButton,
+            {
+              opacity: 1,
+              filter: "blur(0px)",
+              duration: 0.2,
+              clearProps: "filter",
+            },
+            0.12
+          );
+        }
+        return;
+      }
+      if (!(sourceEl instanceof HTMLElement)) {
         resolve();
         return;
       }
@@ -630,6 +685,7 @@
       const fadeTargets = activeFadeTargets;
       const canAnimateToCard = activeCaseSource instanceof HTMLElement && activeCaseSource.isConnected;
       const sourceRect = canAnimateToCard ? activeCaseSource.getBoundingClientRect() : null;
+      const isSimpleMobile = useSimpleMobileModalTransition();
 
       modal.classList.add("is-transitioning");
 
@@ -647,6 +703,17 @@
           resolve();
         },
       });
+      if (isSimpleMobile) {
+        if (modalBody) {
+          timeline.to(modalBody, { opacity: 0, filter: "blur(6px)", duration: 0.14 }, 0);
+        }
+        if (closeButton) {
+          timeline.to(closeButton, { opacity: 0, filter: "blur(6px)", duration: 0.12 }, 0);
+        }
+        timeline.to(modalPanel, { opacity: 0, y: 10, duration: 0.2, ease: "power2.out" }, 0.02);
+        timeline.to(modalBackdrop, { opacity: 0, duration: 0.22, ease: "power2.out" }, 0);
+        return;
+      }
 
       if (canAnimateToCard && sourceRect) {
         const panelRect = modalPanel.getBoundingClientRect();
@@ -731,7 +798,8 @@
       canAnimateModalTransition() &&
       activeCaseSource instanceof HTMLElement &&
       activeCaseSource.isConnected;
-    if (canAnimateFromCard) {
+    const canAnimateMobileSimple = canAnimateModalTransition() && useSimpleMobileModalTransition();
+    if (canAnimateFromCard || canAnimateMobileSimple) {
       modalTransitionState = "opening";
       await animateModalOpen(activeCaseSource);
       modalTransitionState = "idle";
