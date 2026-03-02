@@ -1506,15 +1506,16 @@
 
       const heroRule = document.querySelector(".rule");
       if (heroRule instanceof HTMLElement && shouldRunBootIntro) {
-        heroTl.set(heroRule, { scaleX: 0, opacity: 0, transformOrigin: "left center" }, 0);
-        heroTl.to(
+        const finalRuleWidth = Math.max(1, Math.round(heroRule.getBoundingClientRect().width));
+        heroTl.fromTo(
           heroRule,
+          { width: 0, opacity: 0 },
           {
-            scaleX: 1,
+            width: finalRuleWidth,
             opacity: 1,
-            duration: 0.68,
+            duration: 0.62,
             ease: "power2.out",
-            clearProps: "transform,opacity",
+            clearProps: "width,opacity",
           },
           "copyIn+=0.2"
         );

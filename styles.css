@@ -385,7 +385,6 @@ a:focus-visible {
   width: 72px;
   background: var(--c-text);
   margin-top: var(--s-3);
-  transform-origin: left center;
 }
 
 .name {
