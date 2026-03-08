@@ -277,6 +277,19 @@ body.booting-intro .rule {
   max-width: var(--max-w);
   margin-left: auto;
   margin-right: auto;
+  /*
+    Non-blocking startup polish:
+    Keep the page visible immediately, then apply a short settle animation so first paint
+    feels intentional on mobile without delaying content.
+  */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page:not(.boot-hidden) {
+    animation: page-content-ready-fade 460ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
+  }
 }
 
 .page.boot-hidden {
@@ -297,6 +310,17 @@ body.booting-intro .rule {
   to {
     opacity: 1;
     visibility: visible;
+  }
+}
+
+@keyframes page-content-ready-fade {
+  from {
+    opacity: 0.84;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

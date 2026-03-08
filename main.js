@@ -31,7 +31,30 @@
   const lightboxBackdrop = lightbox ? lightbox.querySelector(".lightbox-backdrop") : null;
   const bootBlack = document.querySelector(".boot-black");
   const pageRoot = document.querySelector(".page");
-  const bootStartsHidden = pageRoot instanceof HTMLElement && pageRoot.classList.contains("boot-hidden");
+  const pageRequestsBootHidden =
+    pageRoot instanceof HTMLElement && pageRoot.classList.contains("boot-hidden");
+  const cursor = document.querySelector(".cursor");
+  const introOverlay = document.querySelector(".intro-columns");
+  const introPov = introOverlay ? introOverlay.querySelector(".intro-pov") : null;
+  const introTray = introOverlay ? introOverlay.querySelector(".intro-tray") : null;
+  const introSeedDie = introOverlay ? introOverlay.querySelector(".intro-die") : null;
+  const hasIntroMarkup =
+    introOverlay instanceof HTMLElement &&
+    introPov instanceof HTMLElement &&
+    introTray instanceof HTMLElement &&
+    introSeedDie instanceof HTMLElement;
+  /*
+    Progressive enhancement safety:
+    Never allow a blocking boot state unless the full intro structure exists.
+    This prevents mobile black screens when JS/CDN timing is slow or intro markup is absent.
+  */
+  const bootStartsHidden = pageRequestsBootHidden && hasIntroMarkup;
+  if (pageRequestsBootHidden && !bootStartsHidden && pageRoot instanceof HTMLElement) {
+    pageRoot.classList.remove("boot-hidden");
+    if (bootBlack instanceof HTMLElement) {
+      bootBlack.style.display = "none";
+    }
+  }
   if ("scrollRestoration" in history) {
     history.scrollRestoration = "manual";
   }
@@ -55,16 +78,6 @@
     setIntroBooting(true);
     window.scrollTo(0, 0);
   }
-  const cursor = document.querySelector(".cursor");
-  const introOverlay = document.querySelector(".intro-columns");
-  const introPov = introOverlay ? introOverlay.querySelector(".intro-pov") : null;
-  const introTray = introOverlay ? introOverlay.querySelector(".intro-tray") : null;
-  const introSeedDie = introOverlay ? introOverlay.querySelector(".intro-die") : null;
-  const hasIntroMarkup =
-    introOverlay instanceof HTMLElement &&
-    introPov instanceof HTMLElement &&
-    introTray instanceof HTMLElement &&
-    introSeedDie instanceof HTMLElement;
   let lastFocused = null;
   let lastFocusedLightbox = null;
   const lightboxZoom = {

@@ -19,8 +19,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#07070a" />
     <title>Carlos (Charlie) Salazar</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <style>
+      /*
+        Critical first paint guard:
+        Keep the base palette visible before styles.css downloads so mobile never flashes
+        an unstyled black/white frame during slower JS/CSS startup.
+      */
+      html,
+      body {
+        margin: 0;
+        background-color: #07070a;
+        color: #fffce1;
+      }
+    </style>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,20 +43,20 @@
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="styles.css?v=20260302i" />
+    <link rel="stylesheet" href="styles.css?v=20260302l" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
-    <script src="main.js?v=20260302j" defer></script>
+    <script src="main.js?v=20260302k" defer></script>
   </head>
 
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <div class="boot-black" aria-hidden="true"></div>
     <div class="cursor" aria-hidden="true">
       <span class="cursor-text">GO</span>
     </div>
     <!-- Layout shell -->
-    <div class="page boot-hidden">
+    <!-- Keep core content paintable by default; JS intro can still enhance later. -->
+    <div class="page">
       <!-- Hero -->
       <header class="site-header">
         <div class="container">
