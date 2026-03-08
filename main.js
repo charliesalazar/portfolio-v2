@@ -50,8 +50,7 @@
   const forceMobileIntroTest =
     typeof mobileIntroTestParam === "string" && /^(1|true|on)$/i.test(mobileIntroTestParam);
   const shouldUseBootIntroByViewport =
-    (typeof window.matchMedia === "function" && window.matchMedia("(min-width: 721px)").matches) ||
-    forceMobileIntroTest;
+    typeof window.matchMedia === "function" && window.matchMedia("(min-width: 721px)").matches;
   /*
     Progressive enhancement safety:
     Allow blocking boot intro only on desktop.
@@ -1511,6 +1510,8 @@
         gsap.set(heroIntroChars, { clearProps: "transform,opacity,filter" });
       }
       const nickname = document.querySelector(".nickname");
+      const tagline = document.querySelector(".tagline");
+      const heroRule = document.querySelector(".rule");
 
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out", immediateRender: false } });
       let introStartAt = 0;
@@ -1528,8 +1529,77 @@
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
+      const shouldAnimateSimpleMobileHero = !isDesktop && forceMobileIntroTest;
       const shouldAnimateNameChars = !hasIntro && shouldRunBootIntro;
-      if (shouldAnimateNameChars) {
+      if (shouldAnimateSimpleMobileHero) {
+        heroTl.addLabel("intro", 0);
+        heroTl.set(
+          heroIntroChars,
+          { opacity: 1, rotationX: 0, x: 0, yPercent: 0, z: 0, clearProps: "transform,filter" },
+          "intro"
+        );
+        if (heroNameLines.length) {
+          heroTl.set(heroNameLines, { opacity: 0, y: 14, filter: "blur(8px)" }, "intro");
+          heroTl.to(
+            heroNameLines,
+            {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.5,
+              stagger: 0.08,
+              ease: "power2.out",
+              clearProps: "filter",
+            },
+            "intro+=0.02"
+          );
+        }
+        if (nickname instanceof HTMLElement) {
+          heroTl.set(nickname, { opacity: 0, y: 10, filter: "blur(8px)" }, "intro");
+          heroTl.to(
+            nickname,
+            {
+              opacity: 0.9,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.42,
+              ease: "power2.out",
+              clearProps: "filter",
+            },
+            "intro+=0.18"
+          );
+        }
+        if (tagline instanceof HTMLElement) {
+          heroTl.set(tagline, { opacity: 0, y: 14, filter: "blur(8px)" }, "intro");
+          heroTl.to(
+            tagline,
+            {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.56,
+              ease: "power2.out",
+              clearProps: "filter",
+            },
+            "intro+=0.24"
+          );
+        }
+        if (heroRule instanceof HTMLElement) {
+          heroTl.set(heroRule, { opacity: 0, scaleX: 0, transformOrigin: "left center" }, "intro");
+          heroTl.to(
+            heroRule,
+            {
+              opacity: 1,
+              scaleX: 1,
+              duration: 0.44,
+              ease: "power2.out",
+              clearProps: "transform,opacity",
+            },
+            "intro+=0.34"
+          );
+        }
+        heroTl.addLabel("copyIn", "intro+=0.22");
+      } else if (shouldAnimateNameChars) {
         const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
         heroTl.set(
           heroNameLines,
@@ -1610,7 +1680,6 @@
         revealBootPage();
       }, "intro");
 
-      const heroRule = document.querySelector(".rule");
       if (heroRule instanceof HTMLElement && shouldRunBootIntro) {
         const finalRuleWidth = Math.max(1, Math.round(heroRule.getBoundingClientRect().width));
         heroTl.set(heroRule, { width: 0, opacity: 0 }, 0);
@@ -1638,7 +1707,6 @@
         setIntroBooting(false);
       }
 
-      const tagline = document.querySelector(".tagline");
       if (tagline instanceof HTMLElement && shouldRunBootIntro) {
         heroTl.set(tagline, { y: 18, opacity: 0, filter: "blur(8px)" }, 0);
         heroTl.to(
@@ -1656,9 +1724,9 @@
       } else {
         if (shouldRunBootIntro) {
           heroTl.from(
-          ".tagline",
-          { y: 18, opacity: 0, duration: 0.7 },
-          "copyIn+=0.1"
+            ".tagline",
+            { y: 18, opacity: 0, duration: 0.7 },
+            "copyIn+=0.1"
           );
         }
       }
