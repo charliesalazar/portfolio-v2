@@ -43,12 +43,14 @@
     introPov instanceof HTMLElement &&
     introTray instanceof HTMLElement &&
     introSeedDie instanceof HTMLElement;
+  const shouldUseBootIntroByViewport =
+    typeof window.matchMedia === "function" && window.matchMedia("(min-width: 721px)").matches;
   /*
     Progressive enhancement safety:
-    Never allow a blocking boot state unless the full intro structure exists.
-    This prevents mobile black screens when JS/CDN timing is slow or intro markup is absent.
+    Only allow blocking boot on desktop and only when intro structure exists.
+    Mobile starts visible to avoid black-screen startup regressions.
   */
-  const bootStartsHidden = pageRequestsBootHidden && hasIntroMarkup;
+  const bootStartsHidden = pageRequestsBootHidden && hasIntroMarkup && shouldUseBootIntroByViewport;
   if (pageRequestsBootHidden && !bootStartsHidden && pageRoot instanceof HTMLElement) {
     pageRoot.classList.remove("boot-hidden");
     if (bootBlack instanceof HTMLElement) {
