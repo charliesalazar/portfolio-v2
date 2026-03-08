@@ -109,6 +109,9 @@ body {
   border: 0;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Boot / intro safety layer                                                   */
+/* -------------------------------------------------------------------------- */
 body.intro-scroll-lock {
   overflow: hidden;
 }
@@ -196,6 +199,7 @@ body.booting-intro .rule {
   display: none;
 }
 
+/* Slightly smaller intro geometry on compact screens. */
 @media (max-width: 900px) {
   .intro-die {
     width: min(340px, 78vw);
@@ -203,6 +207,9 @@ body.booting-intro .rule {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Custom cursor (enhancement only; pointer-fine devices)                      */
+/* -------------------------------------------------------------------------- */
 @media (pointer: fine) {
   body {
     cursor: none;
@@ -483,6 +490,9 @@ a:focus-visible {
   will-change: transform, opacity, filter;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Homepage content sections                                                    */
+/* -------------------------------------------------------------------------- */
 /* Selected work */
 .work-list {
   list-style: none;
@@ -659,6 +669,9 @@ p { margin: 0 0 var(--s-2) 0; }
   overflow: hidden;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Case modal + injected case-study content                                    */
+/* -------------------------------------------------------------------------- */
 /* Case modal: fixed viewport shell; panel owns scrolling and focus content. */
 .case-modal {
   position: fixed;
@@ -1158,6 +1171,7 @@ p { margin: 0 0 var(--s-2) 0; }
 }
 
 body.modal-open {
+  /* Prevent background page scroll while modal is open. */
   overflow: hidden;
 }
 
@@ -1323,6 +1337,9 @@ body.modal-open {
   text-transform: uppercase;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Responsive overrides                                                         */
+/* -------------------------------------------------------------------------- */
 /* Mobile: tighter spacing and stacked work cards */
 @media (max-width: 720px) {
   :root { --pad-x: 18px; --s-7: 64px; --s-8: 96px; }

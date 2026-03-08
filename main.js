@@ -52,6 +52,9 @@
     introPov instanceof HTMLElement &&
     introTray instanceof HTMLElement &&
     introSeedDie instanceof HTMLElement;
+  // ---------------------------------------------------------------------------
+  // Boot + hero-intro mode selection
+  // ---------------------------------------------------------------------------
   // Debug/test switch: `?mobileIntro=1` enables the lighter mobile hero intro path.
   const mobileIntroTestParam =
     typeof window !== "undefined"
@@ -177,6 +180,9 @@
     window.addEventListener("unhandledrejection", emergencyRevealBoot, { once: true });
   }
 
+  // ---------------------------------------------------------------------------
+  // Case-study content loading helpers
+  // ---------------------------------------------------------------------------
   const isResponsiveRaster = (pathname) =>
     /\.(png|jpe?g)$/i.test(pathname) && !/-640\.(png|jpe?g)$/i.test(pathname);
 
@@ -332,6 +338,9 @@
     return true;
   };
 
+  // ---------------------------------------------------------------------------
+  // Modal media reveal system (inside scrollable modal panel)
+  // ---------------------------------------------------------------------------
   const canAnimateModalTransition = () =>
     typeof gsap !== "undefined" &&
     !prefersReducedMotion &&
@@ -502,6 +511,9 @@
     return { rows, dice, cubes };
   };
 
+  // ---------------------------------------------------------------------------
+  // Modal open/close transition choreography
+  // ---------------------------------------------------------------------------
   const animateModalOpen = (sourceEl) =>
     new Promise((resolve) => {
       if (!canAnimateModalTransition()) {
@@ -930,6 +942,9 @@
     if (lastFocused && lastFocused.focus) lastFocused.focus();
   };
 
+  // ---------------------------------------------------------------------------
+  // Lightbox interaction state + helpers
+  // ---------------------------------------------------------------------------
   const renderLightboxTransform = () => {
     if (!lightboxImage) return;
     lightboxImage.style.transform = `translate(${lightboxZoom.offsetX}px, ${lightboxZoom.offsetY}px) scale(${lightboxZoom.scale})`;
@@ -1047,6 +1062,9 @@
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // DOM event wiring (modal, lightbox, card clicks, hash routing)
+  // ---------------------------------------------------------------------------
   if (modal) {
     modal.addEventListener("click", (event) => {
       const target = event.target;
@@ -1229,6 +1247,9 @@
     window.addEventListener("mouseover", setLinkState);
   }
 
+  // ---------------------------------------------------------------------------
+  // Motion runtime bootstrap (GSAP + matchMedia timelines)
+  // ---------------------------------------------------------------------------
   // Motion guard: skip enhancements when GSAP is unavailable.
   if (typeof gsap === "undefined") {
     revealBootPage();
