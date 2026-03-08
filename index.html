@@ -22,6 +22,7 @@
     <meta name="theme-color" content="#07070a" />
     <title>Carlos (Charlie) Salazar</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <!-- Analytics is loaded in every HTML entry page (home, cases, 404) for consistent tracking. -->
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-T3KGNJZP25"></script>
     <script>
@@ -53,6 +54,7 @@
       rel="stylesheet"
     />
 
+    <!-- `?v=` query strings are manual cache-bust markers after deploys. -->
     <link rel="stylesheet" href="styles.css?v=20260308a" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
@@ -66,6 +68,7 @@
       <span class="cursor-text">GO</span>
     </div>
     <!-- Layout shell -->
+    <!-- `boot-hidden` lets JS decide when the hero intro reveals the page. -->
     <div class="page boot-hidden">
       <!-- Hero -->
       <header class="site-header">
@@ -98,6 +101,7 @@
             <h2 id="work-title">Selected Work</h2>
 
             <ul class="work-list">
+            <!-- Each work card opens in the JS modal and also supports direct case-page navigation. -->
             <li class="work-item">
               <a class="work-link" href="cases/case_study_earthview.html" aria-label="Transforming Network Data into Interactive 3D Insights" data-case="earthview">
                 <div class="work-copy">

@@ -1,4 +1,10 @@
 /* Portfolio v2 design system: warm-on-dark, bold type, flat surfaces. */
+/*
+  File guide for beginners:
+  - `:root` tokens are global design decisions (type, spacing, color).
+  - Boot/intro classes (`.boot-*`, `.intro-*`) support first-load hero animation safety.
+  - Component sections below style hero, work list, about, modal, and case-study layouts.
+*/
 
 :root {
   /* Typography: shared family with variable axes. */
@@ -110,6 +116,7 @@ body.intro-scroll-lock {
 body.booting-intro .nickname,
 body.booting-intro .tagline,
 body.booting-intro .rule {
+  /* Hide hero copy while JS sets deterministic start states for intro animation. */
   opacity: 0 !important;
 }
 
@@ -124,6 +131,7 @@ body.booting-intro .rule {
 }
 
 .intro-columns {
+  /* Optional full-screen intro overlay used by the desktop hero sequence. */
   position: fixed;
   inset: 0;
   z-index: 3200;

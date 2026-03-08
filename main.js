@@ -1,3 +1,11 @@
+/*
+  Portfolio runtime script (single entry point).
+  What lives here:
+  1) Hero intro boot flow (desktop full intro + optional mobile test intro)
+  2) Case-study modal loading/animation logic
+  3) Lightbox behavior for case media
+  4) Scroll-based motion enhancements and pointer interactions
+*/
 (() => {
   // Case registry: card keys map to external case-study sources.
   const caseStudies = {
@@ -19,6 +27,7 @@
     },
   };
 
+  // Modal shell and lightbox nodes are queried once and reused throughout this file.
   const modal = document.querySelector("#case-modal");
   const modalPanel = modal ? modal.querySelector(".case-modal-panel") : null;
   const modalBody = modal ? modal.querySelector(".case-modal-body") : null;
@@ -43,6 +52,7 @@
     introPov instanceof HTMLElement &&
     introTray instanceof HTMLElement &&
     introSeedDie instanceof HTMLElement;
+  // Debug/test switch: `?mobileIntro=1` enables the lighter mobile hero intro path.
   const mobileIntroTestParam =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("mobileIntro")
@@ -67,6 +77,7 @@
   if ("scrollRestoration" in history) {
     history.scrollRestoration = "manual";
   }
+  // Always enter at top so intro and section reveals are deterministic.
   const forceScrollTop = () => {
     try {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -269,6 +280,7 @@
     });
   };
 
+  // Loads case content into the modal, preferring external HTML over inline hardcoding.
   const renderCase = async (key) => {
     const data = caseStudies[key];
     if (!data || !modalBody) return false;
@@ -795,6 +807,7 @@
       }
     });
 
+  // Open flow: render content -> show modal -> animate from source card when possible.
   const openModal = async (key, sourceEl = null) => {
     if (!modal || !modalBody) return false;
     if (modalTransitionState !== "idle") return false;
@@ -837,6 +850,7 @@
     return true;
   };
 
+  // Close flow mirrors open flow and restores focus/hash for accessibility/navigation.
   const closeModal = async () => {
     if (!modal) return;
     if (modalTransitionState !== "idle") return;
@@ -1223,6 +1237,7 @@
     gsap.registerPlugin(ScrollTrigger);
   }
 
+  // MatchMedia keeps desktop/mobile animation strategies in one place.
   const mm = gsap.matchMedia();
   mm.add(
     {
@@ -1246,6 +1261,7 @@
       // Some iPhone sessions report reduced-motion unexpectedly, which previously skipped the intro.
 
       const { rows: introRows, dice: introDice, cubes: introCubes } = buildIntroColumns();
+      // Full cube intro is optional: if markup is missing we still run a text-based hero intro.
       const hasIntro =
         shouldRunBootIntro &&
         introOverlay instanceof HTMLElement &&
@@ -1529,6 +1545,7 @@
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
+      // Mobile test path: intentionally lighter than desktop to reduce jank on phones.
       const shouldAnimateSimpleMobileHero = !isDesktop && forceMobileIntroTest;
       const shouldAnimateNameChars = !hasIntro && shouldRunBootIntro;
       if (shouldAnimateSimpleMobileHero) {
