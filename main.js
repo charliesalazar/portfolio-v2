@@ -43,8 +43,15 @@
     introPov instanceof HTMLElement &&
     introTray instanceof HTMLElement &&
     introSeedDie instanceof HTMLElement;
+  const mobileIntroTestParam =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("mobileIntro")
+      : null;
+  const forceMobileIntroTest =
+    typeof mobileIntroTestParam === "string" && /^(1|true|on)$/i.test(mobileIntroTestParam);
   const shouldUseBootIntroByViewport =
-    typeof window.matchMedia === "function" && window.matchMedia("(min-width: 721px)").matches;
+    (typeof window.matchMedia === "function" && window.matchMedia("(min-width: 721px)").matches) ||
+    forceMobileIntroTest;
   /*
     Progressive enhancement safety:
     Allow blocking boot intro only on desktop.
