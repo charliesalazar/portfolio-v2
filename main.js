@@ -47,10 +47,11 @@
     typeof window.matchMedia === "function" && window.matchMedia("(min-width: 721px)").matches;
   /*
     Progressive enhancement safety:
-    Only allow blocking boot on desktop and only when intro structure exists.
+    Allow blocking boot intro only on desktop.
+    The richer cube intro still requires full intro markup, but hero text intro can run without it.
     Mobile starts visible to avoid black-screen startup regressions.
   */
-  const bootStartsHidden = pageRequestsBootHidden && hasIntroMarkup && shouldUseBootIntroByViewport;
+  const bootStartsHidden = pageRequestsBootHidden && shouldUseBootIntroByViewport;
   if (pageRequestsBootHidden && !bootStartsHidden && pageRoot instanceof HTMLElement) {
     pageRoot.classList.remove("boot-hidden");
     if (bootBlack instanceof HTMLElement) {
