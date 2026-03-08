@@ -113,12 +113,16 @@
   // In-memory cache avoids re-fetching case HTML on repeated opens.
   const externalCaseCache = new Map();
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Tracks which card launched the modal so close animation can return to that card.
   let activeCaseSource = null;
+  // Tiny state machine prevents open/close animations from overlapping.
   let modalTransitionState = "idle";
+  // Temporary list of animated nodes to clear GSAP props after transitions.
   let activeFadeTargets = [];
   let cleanupModalMediaReveal = () => {};
   let fallbackHeroStarted = false;
   let syncCursorSuppression = () => {};
+  // Single "reveal now" helper used by normal intro completion and emergency fallbacks.
   const revealBootPage = () => {
     if (!(pageRoot instanceof HTMLElement)) return;
     pageRoot.classList.remove("boot-hidden");
@@ -202,6 +206,7 @@
     modalPanel.setAttribute("aria-label", "Case study");
   };
 
+  // Fetch external case HTML, normalize relative image paths, and return modal-ready markup.
   const loadExternalCase = async (key, path) => {
     if (!path) return null;
     const isLocalDev =
@@ -368,6 +373,7 @@
     }
   };
 
+  // Reveal media as the user scrolls inside the modal panel (progressive, not all at once).
   const setupModalMediaScrollReveal = () => {
     cleanupModalMediaReveal();
     const mediaTargets = getModalMediaTargets();
@@ -810,6 +816,7 @@
   // Open flow: render content -> show modal -> animate from source card when possible.
   const openModal = async (key, sourceEl = null) => {
     if (!modal || !modalBody) return false;
+    // Ignore repeated clicks while an open/close animation is still running.
     if (modalTransitionState !== "idle") return false;
     cleanupModalMediaReveal();
     modalBody.innerHTML = `
@@ -853,6 +860,7 @@
   // Close flow mirrors open flow and restores focus/hash for accessibility/navigation.
   const closeModal = async () => {
     if (!modal) return;
+    // Ignore close requests during transitions to keep modal state consistent.
     if (modalTransitionState !== "idle") return;
     cleanupModalMediaReveal();
 
@@ -1151,6 +1159,7 @@
     });
   }
 
+  // Hash routing contract: `#case-<key>` opens matching modal content.
   const openFromHash = async () => {
     // Deep-link support: opening /#case-key launches the matching modal.
     if (!location.hash.startsWith("#case-")) return;
@@ -1184,6 +1193,7 @@
       const shouldSuppress =
         modalTransitionState !== "idle" ||
         (lightbox && lightbox.classList.contains("is-open"));
+      // During transitions/lightbox we disable custom cursor to reduce visual noise.
       document.body.classList.toggle("cursor-suppressed", Boolean(shouldSuppress));
       if (shouldSuppress) hideCursor();
     };

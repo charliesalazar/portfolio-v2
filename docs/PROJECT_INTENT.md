@@ -15,6 +15,17 @@ This file explains the "why" behind major decisions so future edits stay consist
 - `styles.css`: global design tokens + all component styles + intro/fallback behavior.
 - `cases/*.html`: case-study source content loaded directly and also into modal.
 
+## Beginner Reading Order
+
+- Step 1: Open `index.html` to see the page skeleton and script/style includes.
+- Step 2: Open `styles.css` and review `:root` tokens first.
+- Step 3: Open `main.js` and find these functions in order:
+  - `renderCase` (how modal content is loaded)
+  - `openModal` / `closeModal` (UI state transitions)
+  - `openFromHash` (deep-link behavior)
+  - `mm.add(...)` (desktop/mobile animation decisions)
+- Step 4: Open one `cases/*.html` file to understand the content format injected into modal.
+
 ## Hero Intro Strategy
 
 - Desktop (`>= 721px`): uses boot intro flow (`.page.boot-hidden`) to control reveal timing.
