@@ -454,10 +454,13 @@ a:focus-visible {
 }
 
 .nickname {
+  display: block;
   font-weight: 700;
   font-size: 0.12em;
   letter-spacing: 0.18em;
-  margin-left: 0.6rem;
+  margin-top: 0.18em;
+  margin-left: 0;
+  line-height: 1;
   opacity: 0.9;
   white-space: nowrap;
 }
