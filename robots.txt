@@ -1,0 +1,3 @@
+# Allow crawling so bots can detect page-level noindex and remove URLs from results.
+User-agent: *
+Allow: /
