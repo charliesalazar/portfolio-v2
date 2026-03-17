@@ -35,6 +35,14 @@
       gtag("js", new Date());
       gtag("config", "G-T3KGNJZP25");
     </script>
+    <script>
+      if (
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(max-width: 720px)").matches
+      ) {
+        document.documentElement.classList.add("mobile-hero-prep");
+      }
+    </script>
     <style>
       /*
         Critical first paint guard:
@@ -88,7 +96,9 @@
 
           <!-- Positioning statement -->
           <p class="tagline">
-            He’s a product designer who makes complex products easier to use and chaos easier to explain.
+            <span class="tagline-group">He’s a product designer</span>
+            <span class="tagline-group">who makes complex products easier to use</span>
+            <span class="tagline-group">and chaos easier to explain.</span>
           </p>
 
           <!-- Hero divider -->

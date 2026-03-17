@@ -386,6 +386,37 @@ body.css-hero-fallback .rule {
   animation: hero-fallback-rule 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.68s forwards;
 }
 
+@keyframes mobile-hero-prep-failsafe {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes mobile-hero-rule-prep-failsafe {
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+html.mobile-hero-prep .name-line,
+html.mobile-hero-prep .nickname,
+html.mobile-hero-prep .tagline-group {
+  opacity: 0;
+  transform: translateY(16px);
+  filter: blur(8px);
+  animation: mobile-hero-prep-failsafe 0s linear 2400ms forwards;
+}
+
+html.mobile-hero-prep .rule {
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: mobile-hero-rule-prep-failsafe 0s linear 2400ms forwards;
+}
+
 .container {
   max-width: var(--max-w);
   margin-left: auto;
@@ -478,6 +509,11 @@ a:focus-visible {
   color: var(--c-muted);
   font-size: 1.25rem;
   line-height: 1.65;
+}
+
+.tagline-group {
+  display: inline;
+  will-change: transform, opacity, filter;
 }
 
 .tagline-word {
@@ -1385,6 +1421,8 @@ body.modal-open {
     margin-bottom: var(--s-4);
   }
   .tagline { font-size: 1.05rem; max-width: 60ch; }
+  .tagline-group { display: block; }
+  .tagline-group + .tagline-group { margin-top: 0.08em; }
   .footer-links { gap: 12px; }
 
   .case-modal-body {

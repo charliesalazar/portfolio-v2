@@ -125,6 +125,7 @@
   let cleanupModalMediaReveal = () => {};
   let fallbackHeroStarted = false;
   let syncCursorSuppression = () => {};
+  let hasPlayedMobileHeroSequence = false;
   // Single "reveal now" helper used by normal intro completion and emergency fallbacks.
   const revealBootPage = () => {
     if (!(pageRoot instanceof HTMLElement)) return;
@@ -141,6 +142,9 @@
     const pageStyles = window.getComputedStyle(pageRoot);
     const opacity = Number.parseFloat(pageStyles.opacity || "1");
     return pageStyles.visibility !== "hidden" && opacity > 0.95;
+  };
+  const clearMobileHeroPrep = () => {
+    document.documentElement.classList.remove("mobile-hero-prep");
   };
 
   const startCssHeroFallback = () => {
@@ -1252,6 +1256,7 @@
   // ---------------------------------------------------------------------------
   // Motion guard: skip enhancements when GSAP is unavailable.
   if (typeof gsap === "undefined") {
+    clearMobileHeroPrep();
     revealBootPage();
     startCssHeroFallback();
     setIntroScrollLock(false);
@@ -1558,6 +1563,12 @@
       }
       const nickname = document.querySelector(".nickname");
       const tagline = document.querySelector(".tagline");
+      const taglineGroups =
+        tagline instanceof HTMLElement
+          ? Array.from(tagline.querySelectorAll(".tagline-group")).filter(
+              (group) => group instanceof HTMLElement
+            )
+          : [];
       const heroRule = document.querySelector(".rule");
 
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out", immediateRender: false } });
@@ -1576,10 +1587,14 @@
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
-      // Mobile test path: intentionally lighter than desktop to reduce jank on phones.
-      const shouldAnimateSimpleMobileHero = !isDesktop && forceMobileIntroTest;
+      // Mobile path: lighter than desktop so the hero reveal feels crisp on phones.
+      const shouldAnimateSimpleMobileHero =
+        !isDesktop &&
+        !hasPlayedMobileHeroSequence &&
+        (!shouldUseBootIntroByViewport || forceMobileIntroTest);
       const shouldAnimateNameChars = !hasIntro && shouldRunBootIntro;
       if (shouldAnimateSimpleMobileHero) {
+        hasPlayedMobileHeroSequence = true;
         heroTl.addLabel("intro", 0);
         heroTl.set(
           heroIntroChars,
@@ -1617,7 +1632,23 @@
             "intro+=0.18"
           );
         }
-        if (tagline instanceof HTMLElement) {
+        if (tagline instanceof HTMLElement && taglineGroups.length) {
+          heroTl.set(tagline, { clearProps: "filter,opacity,transform" }, "intro");
+          heroTl.set(taglineGroups, { opacity: 0, y: 14, filter: "blur(8px)" }, "intro");
+          heroTl.to(
+            taglineGroups,
+            {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.46,
+              stagger: 0.12,
+              ease: "power2.out",
+              clearProps: "filter",
+            },
+            "intro+=0.3"
+          );
+        } else if (tagline instanceof HTMLElement) {
           heroTl.set(tagline, { opacity: 0, y: 14, filter: "blur(8px)" }, "intro");
           heroTl.to(
             tagline,
@@ -1646,8 +1677,12 @@
             "intro+=0.34"
           );
         }
+        heroTl.add(() => {
+          clearMobileHeroPrep();
+        }, "intro");
         heroTl.addLabel("copyIn", "intro+=0.22");
       } else if (shouldAnimateNameChars) {
+        clearMobileHeroPrep();
         const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
         heroTl.set(
           heroNameLines,
@@ -1706,6 +1741,7 @@
         heroTl.set(heroIntroChars, { rotationX: 0 }, `intro+=${(nameRollStart + nameRollTotal).toFixed(2)}`);
         heroTl.addLabel("copyIn", `intro+=${(nameRollStart + nameRollTotal + 0.08).toFixed(2)}`);
       } else {
+        clearMobileHeroPrep();
         heroTl.addLabel("intro", introStartAt);
         heroTl.set(
           heroIntroChars,
