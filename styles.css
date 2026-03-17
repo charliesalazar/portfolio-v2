@@ -386,7 +386,7 @@ body.css-hero-fallback .rule {
   animation: hero-fallback-rule 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.68s forwards;
 }
 
-@keyframes mobile-hero-prep-failsafe {
+@keyframes mobile-hero-rise {
   to {
     opacity: 1;
     transform: translateY(0);
@@ -394,27 +394,11 @@ body.css-hero-fallback .rule {
   }
 }
 
-@keyframes mobile-hero-rule-prep-failsafe {
+@keyframes mobile-hero-rule {
   to {
     opacity: 1;
     transform: scaleX(1);
   }
-}
-
-html.mobile-hero-prep .name-line,
-html.mobile-hero-prep .nickname,
-html.mobile-hero-prep .tagline-group {
-  opacity: 0;
-  transform: translateY(16px);
-  filter: blur(8px);
-  animation: mobile-hero-prep-failsafe 0s linear 2400ms forwards;
-}
-
-html.mobile-hero-prep .rule {
-  opacity: 0;
-  transform: scaleX(0);
-  transform-origin: left center;
-  animation: mobile-hero-rule-prep-failsafe 0s linear 2400ms forwards;
 }
 
 .container {
@@ -1384,7 +1368,7 @@ body.modal-open {
     margin-bottom: 60px;
     padding-top: 0;
     padding-bottom: 0;
-    min-height: 96svh;
+    min-height: 100svh;
     display: flex;
     align-items: center;
   }
@@ -1466,5 +1450,50 @@ body.modal-open {
 
   .case-gallery-2up {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) and (prefers-reduced-motion: no-preference) {
+  .site-header .name-line,
+  .site-header .nickname,
+  .site-header .tagline-group,
+  .site-header .rule {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(8px);
+    animation: mobile-hero-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .site-header .name-line:nth-of-type(1) {
+    animation-delay: 0.06s;
+  }
+
+  .site-header .name-line:nth-of-type(2) {
+    animation-delay: 0.18s;
+  }
+
+  .site-header .nickname {
+    animation-delay: 0.32s;
+  }
+
+  .site-header .tagline-group:nth-of-type(1) {
+    animation-delay: 0.46s;
+  }
+
+  .site-header .tagline-group:nth-of-type(2) {
+    animation-delay: 0.6s;
+  }
+
+  .site-header .tagline-group:nth-of-type(3) {
+    animation-delay: 0.74s;
+  }
+
+  .site-header .rule {
+    filter: none;
+    transform: scaleX(0);
+    transform-origin: left center;
+    animation-name: mobile-hero-rule;
+    animation-duration: 0.44s;
+    animation-delay: 0.88s;
   }
 }

@@ -55,13 +55,6 @@
   // ---------------------------------------------------------------------------
   // Boot + hero-intro mode selection
   // ---------------------------------------------------------------------------
-  // Debug/test switch: `?mobileIntro=1` enables the lighter mobile hero intro path.
-  const mobileIntroTestParam =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("mobileIntro")
-      : null;
-  const forceMobileIntroTest =
-    typeof mobileIntroTestParam === "string" && /^(1|true|on)$/i.test(mobileIntroTestParam);
   const shouldUseBootIntroByViewport =
     typeof window.matchMedia === "function" && window.matchMedia("(min-width: 721px)").matches;
   /*
@@ -125,7 +118,6 @@
   let cleanupModalMediaReveal = () => {};
   let fallbackHeroStarted = false;
   let syncCursorSuppression = () => {};
-  let hasPlayedMobileHeroSequence = false;
   // Single "reveal now" helper used by normal intro completion and emergency fallbacks.
   const revealBootPage = () => {
     if (!(pageRoot instanceof HTMLElement)) return;
@@ -143,10 +135,6 @@
     const opacity = Number.parseFloat(pageStyles.opacity || "1");
     return pageStyles.visibility !== "hidden" && opacity > 0.95;
   };
-  const clearMobileHeroPrep = () => {
-    document.documentElement.classList.remove("mobile-hero-prep");
-  };
-
   const startCssHeroFallback = () => {
     if (!bootStartsHidden || fallbackHeroStarted) return;
     fallbackHeroStarted = true;
@@ -1256,7 +1244,6 @@
   // ---------------------------------------------------------------------------
   // Motion guard: skip enhancements when GSAP is unavailable.
   if (typeof gsap === "undefined") {
-    clearMobileHeroPrep();
     revealBootPage();
     startCssHeroFallback();
     setIntroScrollLock(false);
@@ -1563,12 +1550,6 @@
       }
       const nickname = document.querySelector(".nickname");
       const tagline = document.querySelector(".tagline");
-      const taglineGroups =
-        tagline instanceof HTMLElement
-          ? Array.from(tagline.querySelectorAll(".tagline-group")).filter(
-              (group) => group instanceof HTMLElement
-            )
-          : [];
       const heroRule = document.querySelector(".rule");
 
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out", immediateRender: false } });
@@ -1587,102 +1568,8 @@
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
-      // Mobile path: lighter than desktop so the hero reveal feels crisp on phones.
-      const shouldAnimateSimpleMobileHero =
-        !isDesktop &&
-        !hasPlayedMobileHeroSequence &&
-        (!shouldUseBootIntroByViewport || forceMobileIntroTest);
       const shouldAnimateNameChars = !hasIntro && shouldRunBootIntro;
-      if (shouldAnimateSimpleMobileHero) {
-        hasPlayedMobileHeroSequence = true;
-        heroTl.addLabel("intro", 0);
-        heroTl.set(
-          heroIntroChars,
-          { opacity: 1, rotationX: 0, x: 0, yPercent: 0, z: 0, clearProps: "transform,filter" },
-          "intro"
-        );
-        if (heroNameLines.length) {
-          heroTl.set(heroNameLines, { opacity: 0, y: 14, filter: "blur(8px)" }, "intro");
-          heroTl.to(
-            heroNameLines,
-            {
-              opacity: 1,
-              y: 0,
-              filter: "blur(0px)",
-              duration: 0.5,
-              stagger: 0.08,
-              ease: "power2.out",
-              clearProps: "filter",
-            },
-            "intro+=0.02"
-          );
-        }
-        if (nickname instanceof HTMLElement) {
-          heroTl.set(nickname, { opacity: 0, y: 10, filter: "blur(8px)" }, "intro");
-          heroTl.to(
-            nickname,
-            {
-              opacity: 0.9,
-              y: 0,
-              filter: "blur(0px)",
-              duration: 0.42,
-              ease: "power2.out",
-              clearProps: "filter",
-            },
-            "intro+=0.18"
-          );
-        }
-        if (tagline instanceof HTMLElement && taglineGroups.length) {
-          heroTl.set(tagline, { clearProps: "filter,opacity,transform" }, "intro");
-          heroTl.set(taglineGroups, { opacity: 0, y: 14, filter: "blur(8px)" }, "intro");
-          heroTl.to(
-            taglineGroups,
-            {
-              opacity: 1,
-              y: 0,
-              filter: "blur(0px)",
-              duration: 0.46,
-              stagger: 0.12,
-              ease: "power2.out",
-              clearProps: "filter",
-            },
-            "intro+=0.3"
-          );
-        } else if (tagline instanceof HTMLElement) {
-          heroTl.set(tagline, { opacity: 0, y: 14, filter: "blur(8px)" }, "intro");
-          heroTl.to(
-            tagline,
-            {
-              opacity: 1,
-              y: 0,
-              filter: "blur(0px)",
-              duration: 0.56,
-              ease: "power2.out",
-              clearProps: "filter",
-            },
-            "intro+=0.24"
-          );
-        }
-        if (heroRule instanceof HTMLElement) {
-          heroTl.set(heroRule, { opacity: 0, scaleX: 0, transformOrigin: "left center" }, "intro");
-          heroTl.to(
-            heroRule,
-            {
-              opacity: 1,
-              scaleX: 1,
-              duration: 0.44,
-              ease: "power2.out",
-              clearProps: "transform,opacity",
-            },
-            "intro+=0.34"
-          );
-        }
-        heroTl.add(() => {
-          clearMobileHeroPrep();
-        }, "intro");
-        heroTl.addLabel("copyIn", "intro+=0.22");
-      } else if (shouldAnimateNameChars) {
-        clearMobileHeroPrep();
+      if (shouldAnimateNameChars) {
         const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
         heroTl.set(
           heroNameLines,
@@ -1741,7 +1628,6 @@
         heroTl.set(heroIntroChars, { rotationX: 0 }, `intro+=${(nameRollStart + nameRollTotal).toFixed(2)}`);
         heroTl.addLabel("copyIn", `intro+=${(nameRollStart + nameRollTotal + 0.08).toFixed(2)}`);
       } else {
-        clearMobileHeroPrep();
         heroTl.addLabel("intro", introStartAt);
         heroTl.set(
           heroIntroChars,
