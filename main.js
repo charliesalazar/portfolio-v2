@@ -1,7 +1,7 @@
 /*
   Portfolio runtime script (single entry point).
   What lives here:
-  1) Hero intro boot flow (desktop full intro + optional mobile test intro)
+  1) Hero intro boot flow (desktop GSAP intro + mobile CSS intro)
   2) Case-study modal loading/animation logic
   3) Lightbox behavior for case media
   4) Scroll-based motion enhancements and pointer interactions
@@ -43,15 +43,6 @@
   const pageRequestsBootHidden =
     pageRoot instanceof HTMLElement && pageRoot.classList.contains("boot-hidden");
   const cursor = document.querySelector(".cursor");
-  const introOverlay = document.querySelector(".intro-columns");
-  const introPov = introOverlay ? introOverlay.querySelector(".intro-pov") : null;
-  const introTray = introOverlay ? introOverlay.querySelector(".intro-tray") : null;
-  const introSeedDie = introOverlay ? introOverlay.querySelector(".intro-die") : null;
-  const hasIntroMarkup =
-    introOverlay instanceof HTMLElement &&
-    introPov instanceof HTMLElement &&
-    introTray instanceof HTMLElement &&
-    introSeedDie instanceof HTMLElement;
   // ---------------------------------------------------------------------------
   // Boot + hero-intro mode selection
   // ---------------------------------------------------------------------------
@@ -60,8 +51,8 @@
   /*
     Progressive enhancement safety:
     Allow blocking boot intro only on desktop.
-    The richer cube intro still requires full intro markup, but hero text intro can run without it.
-    Mobile starts visible to avoid black-screen startup regressions.
+    Desktop uses a text-only GSAP intro when the page boots hidden.
+    Mobile deliberately skips JS-gated intro states and relies on CSS-only hero motion.
   */
   const bootStartsHidden = pageRequestsBootHidden && shouldUseBootIntroByViewport;
   if (pageRequestsBootHidden && !bootStartsHidden && pageRoot instanceof HTMLElement) {
@@ -166,8 +157,7 @@
       }
     };
     // Runtime fail-safe for mobile browsers/CDN hiccups: never stay black forever.
-    const failSafeDelay = hasIntroMarkup ? 8000 : 3200;
-    window.setTimeout(emergencyRevealBoot, failSafeDelay);
+    window.setTimeout(emergencyRevealBoot, 3200);
     window.addEventListener("error", emergencyRevealBoot, { once: true });
     window.addEventListener("unhandledrejection", emergencyRevealBoot, { once: true });
   }
@@ -464,43 +454,6 @@
       observer.disconnect();
       clearMediaProps();
     };
-  };
-
-  const introRots = [
-    { ry: 270, a: 0.5 },
-    { ry: 0, a: 0.9 },
-    { ry: 90, a: 0.45 },
-    { ry: 180, a: 0.06 },
-  ];
-
-  const introFaceColor = (rowIndex, rows, alpha) => {
-    const hue = 150 + (rowIndex / Math.max(1, rows)) * 58;
-    const light = Math.max(0, Math.min(100, alpha * 100));
-    return `hsl(${hue}, 78%, ${light}%)`;
-  };
-
-  const buildIntroColumns = () => {
-    if (!(introTray instanceof HTMLElement) || !(introSeedDie instanceof HTMLElement)) {
-      return { rows: 0, dice: [], cubes: [] };
-    }
-    const rows = window.matchMedia("(max-width: 900px)").matches ? 14 : 19;
-    const existing = Array.from(introTray.querySelectorAll(".intro-die"));
-    existing.slice(1).forEach((die) => die.remove());
-    for (let i = 1; i < rows; i += 1) {
-      introTray.appendChild(introSeedDie.cloneNode(true));
-    }
-    const dice = Array.from(introTray.querySelectorAll(".intro-die")).filter(
-      (die) => die instanceof HTMLElement
-    );
-    const cubes = dice
-      .map((die) => die.querySelector(".intro-cube"))
-      .filter((cube) => cube instanceof HTMLElement);
-    const stackHeight = rows * 56;
-    gsap.set(introTray, { height: stackHeight });
-    if (introPov instanceof HTMLElement) {
-      gsap.set(introPov, { scale: window.innerHeight / stackHeight });
-    }
-    return { rows, dice, cubes };
   };
 
   // ---------------------------------------------------------------------------
@@ -1282,239 +1235,8 @@
       }
       // Keep the hero intro deterministic across mobile Safari variants.
       // Some iPhone sessions report reduced-motion unexpectedly, which previously skipped the intro.
-
-      const { rows: introRows, dice: introDice, cubes: introCubes } = buildIntroColumns();
-      // Full cube intro is optional: if markup is missing we still run a text-based hero intro.
-      const hasIntro =
-        shouldRunBootIntro &&
-        introOverlay instanceof HTMLElement &&
-        introTray instanceof HTMLElement &&
-        heroContainer instanceof HTMLElement &&
-        introRows > 0 &&
-        introCubes.length > 0;
-      let introTl = null;
-      let cleanupIntro = () => {};
-      if (hasIntro) {
-        const introLoops = [];
-        const focusTopIndex = Math.max(0, Math.floor(introRows * 0.56) - 1);
-        const focusBottomIndex = Math.min(introRows - 1, focusTopIndex + 1);
-        const focusDice = [introDice[focusTopIndex], introDice[focusBottomIndex]].filter(
-          (die) => die instanceof HTMLElement
-        );
-        const otherDice = introDice.filter((_, index) => index !== focusTopIndex && index !== focusBottomIndex);
-        const introNameLines = Array.from(heroContainer.querySelectorAll(".name-line")).filter(
-          (line) => line instanceof HTMLElement
-        );
-        const introNameTargetRects = introNameLines.map((line) => line.getBoundingClientRect());
-        gsap.set(heroContainer, { opacity: 0 });
-        if (introNameLines.length) {
-          gsap.set(introNameLines, { opacity: 0 });
-        }
-        gsap.set(introOverlay, { autoAlpha: 1, display: "grid" });
-
-        introCubes.forEach((cube, rowIndex) => {
-          if (!(cube instanceof HTMLElement)) return;
-          const faces = Array.from(cube.querySelectorAll(".intro-face")).filter(
-            (face) => face instanceof HTMLElement
-          );
-          if (faces.length < 4) return;
-
-          gsap.set(faces, {
-            z: 200,
-            rotateY: (i) => introRots[i % introRots.length].ry,
-            transformOrigin: "50% 50% -201px",
-          });
-
-          const phaseA = [introRots[3].a, introRots[0].a, introRots[1].a, introRots[2].a];
-          const phaseB = [introRots[0].a, introRots[1].a, introRots[2].a, introRots[3].a];
-          const phaseC = [introRots[1].a, introRots[2].a, introRots[3].a, introRots[0].a];
-
-          const loop = gsap
-            .timeline({
-              repeat: -1,
-              yoyo: true,
-              paused: true,
-              defaults: { ease: "power3.inOut", duration: 1 },
-            })
-            .fromTo(
-              cube,
-              { rotateY: -90 },
-              { rotateY: 90, ease: "power1.inOut", duration: 2 }
-            )
-            .fromTo(
-              faces,
-              { color: (j) => introFaceColor(rowIndex, introRows, phaseA[j % phaseA.length]) },
-              { color: (j) => introFaceColor(rowIndex, introRows, phaseB[j % phaseB.length]) },
-              0
-            )
-            .to(
-              faces,
-              { color: (j) => introFaceColor(rowIndex, introRows, phaseC[j % phaseC.length]) },
-              1
-            )
-            .progress(rowIndex / introRows);
-          introLoops.push(loop);
-        });
-
-        const trayLoop = gsap
-          .timeline({ repeat: -1, yoyo: true, paused: true })
-          .fromTo(introTray, { yPercent: -3 }, { yPercent: 3, duration: 3.2, ease: "sine.inOut" }, 0)
-          .fromTo(introTray, { rotate: -15 }, { rotate: 15, duration: 6.2, ease: "sine.inOut" }, 0)
-          .fromTo(introTray, { scale: 1.06 }, { scale: 1.2, duration: 3.2, ease: "power2.inOut" }, 0);
-        introLoops.push(trayLoop);
-        introLoops.forEach((loop) => loop.play());
-
-        const introFocusAt = 2.32;
-        const introMorphAt = 3.46;
-        const introOverlayFadeAt = 4.86;
-        const introCleanupAt = 5.56;
-
-        introTl = gsap.timeline({ defaults: { ease: "power2.out" } });
-        introTl
-          .from(
-            introDice,
-            {
-              y: 132,
-              opacity: 0,
-              duration: 0.9,
-              ease: "power3.out",
-              stagger: { each: -0.03, ease: "power2.out" },
-            },
-            0
-          )
-          .to(
-            introCubes,
-            {
-              rotateY: (index) => {
-                if (index === focusTopIndex) return 90;
-                if (index === focusBottomIndex) return 0;
-                return index % 2 === 0 ? 90 : 0;
-              },
-              duration: 0.62,
-              ease: "sine.inOut",
-            },
-            introFocusAt
-          )
-          .to(
-            otherDice,
-            { opacity: 0.56, filter: "blur(1px)", duration: 0.52, ease: "sine.out" },
-            introFocusAt + 0.04
-          )
-          .to(
-            focusDice,
-            { opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "sine.out" },
-            introFocusAt + 0.04
-          )
-          .add(() => {
-            introLoops.forEach((loop) => loop.pause());
-            if (!(heroContainer instanceof HTMLElement) || focusDice.length < 2) return;
-            if (introNameLines.length < 2 || introNameTargetRects.length < 2) return;
-            gsap.set(heroContainer, { opacity: 1 });
-            const sourceRects = focusDice.map((die) => die.getBoundingClientRect());
-            const targetRects = [introNameTargetRects[0], introNameTargetRects[1]];
-            const focusCubes = focusDice
-              .map((die) => die.querySelector(".intro-cube"))
-              .filter((cube) => cube instanceof HTMLElement);
-            focusCubes.forEach((cube, index) => {
-              gsap.set(cube, { rotateY: index === 0 ? 90 : 0 });
-            });
-
-            introNameLines.forEach((line, index) => {
-              const sourceRect = sourceRects[index];
-              const targetRect = targetRects[index];
-              const widthRatio = sourceRect.width / Math.max(1, targetRect.width);
-              gsap.set(line, {
-                position: "fixed",
-                left: targetRect.left,
-                top: targetRect.top,
-                width: targetRect.width,
-                height: targetRect.height,
-                margin: 0,
-                zIndex: 3340,
-                transformOrigin: "top left",
-                x: sourceRect.left - targetRect.left,
-                y: sourceRect.top - targetRect.top,
-                scaleX: widthRatio,
-                scaleY: widthRatio,
-                opacity: 1,
-                filter: "blur(0px)",
-                willChange: "transform, opacity",
-              });
-              gsap.to(line, {
-                x: 0,
-                y: 0,
-                scaleX: 1,
-                scaleY: 1,
-                duration: 1.42,
-                ease: "power2.inOut",
-              });
-            });
-
-            gsap.to(otherDice, {
-              opacity: 0,
-              filter: "blur(10px)",
-              duration: 1.02,
-              ease: "power2.inOut",
-            });
-            gsap.to(focusDice, {
-              opacity: 0,
-              filter: "blur(7px)",
-              duration: 0.64,
-              ease: "power2.inOut",
-            });
-          }, introMorphAt)
-          .to(introOverlay, { autoAlpha: 0, duration: 0.68, ease: "sine.out" }, introOverlayFadeAt)
-          .add(() => {
-            if (introNameLines.length) {
-              gsap.set(introNameLines, {
-                clearProps:
-                  "position,left,top,width,height,margin,zIndex,transformOrigin,x,y,scaleX,scaleY,opacity,filter,willChange",
-              });
-            }
-            gsap.set(introDice, {
-              clearProps: "opacity,filter",
-            });
-          }, introCleanupAt)
-          .add(() => {
-            introLoops.forEach((loop) => loop.kill());
-          })
-          .set(introOverlay, { display: "none" })
-          .to(heroContainer, { opacity: 1, duration: 0.14, ease: "power1.out" }, ">-0.02");
-
-        cleanupIntro = () => {
-          introLoops.forEach((loop) => loop.kill());
-          if (introOverlay instanceof HTMLElement) {
-            gsap.set(introOverlay, { autoAlpha: 0, display: "none" });
-          }
-          gsap.set(introDice, {
-            clearProps: "opacity,filter",
-          });
-          if (heroContainer instanceof HTMLElement) {
-            gsap.set(heroContainer, { clearProps: "opacity" });
-            const nameLines = Array.from(heroContainer.querySelectorAll(".name-line")).filter(
-              (line) => line instanceof HTMLElement
-            );
-            if (nameLines.length) {
-              gsap.set(nameLines, {
-                clearProps:
-                  "position,left,top,width,height,margin,zIndex,transformOrigin,x,y,scaleX,scaleY,opacity,filter,willChange",
-              });
-            }
-          }
-          if (introPov instanceof HTMLElement) {
-            gsap.set(introPov, { clearProps: "transform" });
-          }
-          if (introTray instanceof HTMLElement) {
-            gsap.set(introTray, { clearProps: "transform,height" });
-          }
-        };
-      } else {
-        if (introOverlay instanceof HTMLElement) {
-          gsap.set(introOverlay, { autoAlpha: 0, display: "none" });
-        }
-        if (heroContainer instanceof HTMLElement) {
-          gsap.set(heroContainer, { opacity: 1 });
-        }
+      if (heroContainer instanceof HTMLElement) {
+        gsap.set(heroContainer, { opacity: 1 });
       }
 
       // Split hero name into per-letter spans for a GSAP-style character reveal.
@@ -1552,15 +1274,10 @@
       const tagline = document.querySelector(".tagline");
       const heroRule = document.querySelector(".rule");
 
+      // Desktop owns the heavy intro choreography; mobile hero copy is handled in CSS.
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out", immediateRender: false } });
       let introStartAt = 0;
-      if (introTl) {
-        heroTl.add(introTl);
-        if (bootBlack instanceof HTMLElement) {
-          heroTl.set(bootBlack, { autoAlpha: 0, display: "none" }, 0);
-        }
-        introStartAt = ">";
-      } else if (bootBlack instanceof HTMLElement && shouldRunBootIntro) {
+      if (bootBlack instanceof HTMLElement && shouldRunBootIntro) {
         heroTl
           .set(bootBlack, { autoAlpha: 1, display: "block" }, 0)
           .set(bootBlack, { autoAlpha: 0, display: "none" }, 0.2);
@@ -1568,8 +1285,9 @@
       } else if (bootBlack instanceof HTMLElement) {
         gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
       }
-      const shouldAnimateNameChars = !hasIntro && shouldRunBootIntro;
+      const shouldAnimateNameChars = shouldRunBootIntro;
       if (shouldAnimateNameChars) {
+        // Fallback desktop intro: roll each character through depth so the name still feels dimensional.
         const tubeDepth = Math.max(84, Math.round(window.innerWidth / 9));
         heroTl.set(
           heroNameLines,
@@ -1647,6 +1365,7 @@
         unlockAt = "copyIn+=0.46";
       }
       heroTl.add(() => {
+        // Reveal content at the start of the copy phase so the hero appears before the rest of the page.
         revealBootPage();
       }, "intro");
 
@@ -1842,7 +1561,6 @@
       }
 
       return () => {
-        cleanupIntro();
         revealBootPage();
         setIntroScrollLock(false);
         setIntroBooting(false);
