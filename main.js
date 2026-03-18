@@ -1144,12 +1144,12 @@
     // Custom cursor is enhancement-only and only active on pointer-capable devices.
     const cursorOffsetX = 12;
     const cursorOffsetY = -12;
-    const highIntentSelector =
-      ".work-link, .case-modal-close, .lightbox-close, .footer-links a, .site-footer a";
+    // Reserve the GO puck for work cards so it feels tied to project exploration, not every link.
+    const goPuckSelector = ".work-link";
     const isCursorSuppressed = () =>
       document.body.classList.contains("cursor-suppressed");
     const hideCursor = () => {
-      cursor.classList.remove("is-active", "is-link", "is-cta");
+      cursor.classList.remove("is-active", "is-link", "is-go");
     };
 
     syncCursorSuppression = () => {
@@ -1181,9 +1181,9 @@
         "a, button, [role=\"button\"], input, textarea, select"
       );
       const isLink = Boolean(target);
-      const isHighIntent = Boolean(target && target.closest(highIntentSelector));
+      const isGoTarget = Boolean(target && target.closest(goPuckSelector));
       cursor.classList.toggle("is-link", isLink);
-      cursor.classList.toggle("is-cta", isHighIntent);
+      cursor.classList.toggle("is-go", isGoTarget);
     };
 
     window.addEventListener("mousemove", moveCursor, { passive: true });
@@ -1420,56 +1420,6 @@
         }
       }
 
-      const cleanupHeroPointer = null;
-
-      let cleanupCardPointer = null;
-      if (isPointerFine) {
-        const links = gsap.utils.toArray(".work-link");
-        const disposers = [];
-
-        links.forEach((link) => {
-          if (!(link instanceof HTMLElement)) return;
-          const media = link.querySelector(".work-media img");
-          gsap.set(link, { transformPerspective: 900, transformOrigin: "center center" });
-
-          const toRotateY = gsap.quickTo(link, "rotateY", { duration: 0.34, ease: "power3.out" });
-          const toRotateX = gsap.quickTo(link, "rotateX", { duration: 0.34, ease: "power3.out" });
-          const toZ = gsap.quickTo(link, "z", { duration: 0.34, ease: "power3.out" });
-
-          const handleMove = (event) => {
-            const rect = link.getBoundingClientRect();
-            const nx = (event.clientX - rect.left) / rect.width - 0.5;
-            const ny = (event.clientY - rect.top) / rect.height - 0.5;
-            toRotateY(nx * 3.4);
-            toRotateX(-ny * 2.8);
-            toZ(14);
-            if (media) {
-              gsap.to(media, { scale: 1.04, duration: 0.45, ease: "power3.out", overwrite: true });
-            }
-          };
-
-          const handleLeave = () => {
-            toRotateY(0);
-            toRotateX(0);
-            toZ(0);
-            if (media) {
-              gsap.to(media, { scale: 1, duration: 0.45, ease: "power3.out", overwrite: true });
-            }
-          };
-
-          link.addEventListener("pointermove", handleMove);
-          link.addEventListener("pointerleave", handleLeave);
-          disposers.push(() => {
-            link.removeEventListener("pointermove", handleMove);
-            link.removeEventListener("pointerleave", handleLeave);
-          });
-        });
-
-        cleanupCardPointer = () => {
-          disposers.forEach((dispose) => dispose());
-        };
-      }
-
       if (hasScrollTrigger) {
         // Section heading reveal (label + rule draw) on scroll.
         ["#work-title", "#about-title"].forEach((selector) => {
@@ -1567,8 +1517,6 @@
         if (bootBlack instanceof HTMLElement) {
           gsap.set(bootBlack, { autoAlpha: 0, display: "none" });
         }
-        if (cleanupHeroPointer) cleanupHeroPointer();
-        if (cleanupCardPointer) cleanupCardPointer();
       };
     }
   );
